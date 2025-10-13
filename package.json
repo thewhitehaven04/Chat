@@ -1,0 +1,33 @@
+{
+  "name": "Chat",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxt/eslint": "^1.9.0",
+    "@nuxt/ui": "^4.0.1",
+    "@primeuix/themes": "1.2.5",
+    "@supabase/ssr": "0.7.0",
+    "@supabase/supabase-js": "^2.75.0",
+    "@tailwindcss/vite": "4.1.14",
+    "nuxt": "^4.1.3",
+    "tailwindcss": "4.1.14",
+    "tailwindcss-primeui": "0.6.1",
+    "vue": "^3.5.22",
+    "vue-router": "^4.5.1",
+    "zod": "4.1.12"
+  },
+  "devDependencies": {
+    "eslint": "^9.37.0",
+    "eslint-plugin-vue": "^10.5.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.1.1"
+  }
+}
