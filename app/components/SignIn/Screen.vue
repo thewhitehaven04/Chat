@@ -12,11 +12,16 @@ const formState = reactive({
     password: ''
 })
 
+const router = useRouter()
+
 const handleSubmit = async ({ data }: FormSubmitEvent<z.infer<typeof schema>>) => {
-    await $fetch('/api/sign-in', {
+    const { success } = await $fetch('/api/sign-in', {
         method: 'POST',
         body: data
     })
+    if (success) {
+        router.push('/sign-in')
+    }
 }
 </script>
 

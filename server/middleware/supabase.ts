@@ -1,5 +1,6 @@
 import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@supabase/ssr'
 import { AuthService } from '../modules/auth/service'
+import { ChatService } from '../modules/chat/service'
 
 export default defineEventHandler((event) => {
     const serverClient = createServerClient(
@@ -26,4 +27,5 @@ export default defineEventHandler((event) => {
     )
 
     event.context.auth = new AuthService(serverClient)
+    event.context.chat = new ChatService(serverClient)
 })

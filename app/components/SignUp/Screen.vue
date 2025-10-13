@@ -27,11 +27,16 @@ const formState = reactive<Partial<Schema>>({
     confirmPassword: undefined
 })
 
+const router = useRouter()
+
 const handleSubmit = async (evt: FormSubmitEvent<Schema>) => {
-    await $fetch('/api/sign-up', {
+    const { success } = await $fetch('/api/sign-up', {
         method: 'POST',
         body: evt.data
     })
+    if (success) {
+        router.push('/sign-in')
+    }
 }
 </script>
 
