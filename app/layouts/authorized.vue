@@ -1,5 +1,5 @@
 <template>
-    <UMain>
+    <AppScreen>
         <slot />
-    </UMain>
+    </AppScreen>
 </template>

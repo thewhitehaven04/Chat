@@ -8,3 +8,8 @@ export interface ISignInInputDto {
     email: string
     password: string
 }
+
+export interface IUserDto {
+    id: string | null
+    email: string | null
+}

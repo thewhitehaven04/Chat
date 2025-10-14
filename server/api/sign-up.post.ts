@@ -1,4 +1,4 @@
-import type { ISignUpInputDto } from '../modules/auth/types'
+import type { ISignUpInputDto } from '../../shared/modules/auth/models/types'
 
 export default defineEventHandler(async (event) => {
     try {

@@ -15,5 +15,15 @@ export default defineNuxtConfig({
         experimental: {
             websocket: true
         }
-    }
+    },
+    routeRules: {
+        '/chat': {
+            ssr: false
+        }
+    },
+    components: [
+        {
+            path: '~/modules',
+        }
+    ]
 })

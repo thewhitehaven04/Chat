@@ -27,5 +27,5 @@ export default defineEventHandler((event) => {
     )
 
     event.context.auth = new AuthService(serverClient)
-    event.context.chat = new ChatService(serverClient)
+    event.context.chat = new ChatService(serverClient, event.context.auth)
 })

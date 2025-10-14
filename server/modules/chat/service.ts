@@ -1,9 +1,14 @@
-import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '~~/server/supabase'
+import type { AuthService } from '../auth/service'
 
 class ChatService {
-    channel: RealtimeChannel
-    constructor(client: SupabaseClient) {
-        this.channel = client.channel('table-db-changes')
+    client: SupabaseClient<Database>
+    authSerivce: AuthService
+
+    constructor(client: SupabaseClient<Database>, authService: AuthService) {
+        this.client = client
+        this.authSerivce = authService
     }
 
     subscribe(
@@ -12,17 +17,29 @@ class ChatService {
             newMessage: Record<string, unknown>
         ) => void
     ) {
-        this.channel.on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: '' },
-            (payload) => {
-                messageCallbackFn(payload.old, payload.new)
-            }
-        )
+        this.client
+            .channel('table-db-changes')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'chat_messages' },
+                (payload) => {
+                    messageCallbackFn(payload.old, payload.new)
+                }
+            )
+    }
+
+    async sendMessage(message: string) {
+        await this.client
+            .from('chat_messages')
+            .insert({
+                text: message,
+                submitted_by: (await this.authSerivce.getUser()).id
+            })
+            .throwOnError()
     }
 
     async unsubscribe() {
-        await this.channel.unsubscribe()
+        await this.client.channel('table-db-changes').unsubscribe()
     }
 }
 

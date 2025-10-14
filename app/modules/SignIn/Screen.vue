@@ -20,7 +20,7 @@ const handleSubmit = async ({ data }: FormSubmitEvent<z.infer<typeof schema>>) =
         body: data
     })
     if (success) {
-        router.push('/sign-in')
+        router.push('/chat')
     }
 }
 </script>
