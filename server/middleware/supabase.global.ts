@@ -2,14 +2,16 @@ import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@s
 import { AuthService } from '../modules/auth/service'
 import { ChatService } from '../modules/chat/service'
 
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
+    const config = useRuntimeConfig()
+
     const serverClient = createServerClient(
-        process.env.SUPABASE_URL!,
-        process.env.SUPABASE_PUBLISHABLE_KEY!,
+        config.public.supabaseUrl,
+        config.public.supabasePublishableKey,
         {
             cookies: {
                 getAll: async () => {
-                    const cookie = event.headers.get('cookie')
+                    const cookie = event.headers.get('Cookie')
                     return cookie
                         ? (parseCookieHeader(cookie) as { name: string; value: string }[])
                         : []
@@ -26,6 +28,7 @@ export default defineEventHandler((event) => {
         }
     )
 
-    event.context.auth = new AuthService(serverClient)
-    event.context.chat = new ChatService(serverClient, event.context.auth)
+    const auth = new AuthService(serverClient)
+    event.context.auth = auth
+    event.context.chat = new ChatService(serverClient, auth)
 })

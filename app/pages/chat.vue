@@ -39,17 +39,19 @@ const handleKeyUp = (event: KeyboardEvent) => {
         handleSubmit()
     }
 }
-
 </script>
 
 <template>
-    <div class="flex flex-col justify-stretch">
-        <div class="h-full flex-1">
+    <UContainer class="flex flex-col h-full">
+        <div class="flex flex-1 w-full">
             <div v-if="isPending" class="flex items-center justify-center h-full">Loading...</div>
-            <div v-else class="flex flex-col gap-4">
-                <span v-for="value in messages" :key="value">
-                    {{ value }}
-                </span>
+            <div v-else class="flex flex-col items-center justify-center flex-1 gap-4">
+                <div v-if="messages.length > 0">
+                    <span v-for="value in messages" :key="value" class="text-lg">
+                        {{ value }}
+                    </span>
+                </div>
+                <span v-else> It's too empty in here... </span>
             </div>
             <div
                 v-if="isDisconnected"
@@ -58,13 +60,19 @@ const handleKeyUp = (event: KeyboardEvent) => {
                 You've been disconnected
             </div>
         </div>
-        <div class="h-48">
-            <UForm @submit="handleSubmit">
-                <div class="flex flex-col items-center gap-2">
-                    <UTextarea v-model="message" name="message" @keyup="handleKeyUp" />
-                    <UButton type="submit">Send</UButton>
-                </div>
-            </UForm>
-        </div>
-    </div>
+        <UForm @submit="handleSubmit">
+            <div class="flex flex-col items-center w-full gap-2">
+                <UTextarea
+                    v-model="message"
+                    name="message"
+                    class="w-full"
+                    placeholder="What do you think?"
+                    :rows="4"
+                    autoresize
+                    @keyup="handleKeyUp"
+                />
+                <UButton type="submit">Send</UButton>
+            </div>
+        </UForm>
+    </UContainer>
 </template>

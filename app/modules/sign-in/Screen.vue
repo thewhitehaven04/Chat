@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
 import * as z from 'zod'
+import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 
 const schema = z.object({
     email: z.email('Invalid email'),
@@ -13,15 +14,14 @@ const formState = reactive({
 })
 
 const router = useRouter()
+const { auth } = useSupabaseClient()
 
-const handleSubmit = async ({ data }: FormSubmitEvent<z.infer<typeof schema>>) => {
-    const { success } = await $fetch('/api/sign-in', {
-        method: 'POST',
-        body: data
+const handleSubmit = async ({ data }: FormSubmitEvent<z.output<typeof schema>>) => {
+    await auth.signInWithPassword({
+        email: data.email,
+        password: data.password
     })
-    if (success) {
-        router.push('/chat')
-    }
+    router.push('/chat')
 }
 </script>
 
@@ -35,6 +35,7 @@ const handleSubmit = async ({ data }: FormSubmitEvent<z.infer<typeof schema>>) =
                         v-model="formState.email"
                         type="email"
                         placeholder="you@example.com"
+                        class="w-full"
                     />
                 </UFormField>
                 <UFormField label="Password" name="password">
@@ -43,10 +44,19 @@ const handleSubmit = async ({ data }: FormSubmitEvent<z.infer<typeof schema>>) =
                         v-model="formState.password"
                         type="password"
                         placeholder="********"
+                        class="w-full"
                     />
                 </UFormField>
                 <UButton label="Sign In" type="submit" />
             </UForm>
+        </template>
+        <template #footer>
+            <div class="flex flex-row items-center justify-between w-full">
+                <div>Don't have an account?</div>
+                <NuxtLink :to="{ path: '/sign-up' }">
+                    <UButton variant="link" label="Sign up" />
+                </NuxtLink>
+            </div>
         </template>
     </UModal>
 </template>

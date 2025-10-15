@@ -1,11 +1,12 @@
-<script setup>
+<script setup lang="ts">
 const { data } = useFetch('/api/user')
 </script>
 
 <template>
     <UHeader>
-        <span>
-            {{ data.email }}
-        </span>
+        <template #title> Multichat </template>
+        <template #right>
+            <span>{{ data?.email }}</span>
+        </template>
     </UHeader>
 </template>

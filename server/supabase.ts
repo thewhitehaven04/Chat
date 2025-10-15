@@ -10,6 +10,7 @@ export type Database = {
         Tables: {
             chat_messages: {
                 Row: {
+                    chat_room: number
                     id: string
                     modified_at: string | null
                     submitted_at: string
@@ -17,6 +18,7 @@ export type Database = {
                     text: string
                 }
                 Insert: {
+                    chat_room: number
                     id?: string
                     modified_at?: string | null
                     submitted_at?: string
@@ -24,11 +26,38 @@ export type Database = {
                     text: string
                 }
                 Update: {
+                    chat_room?: number
                     id?: string
                     modified_at?: string | null
                     submitted_at?: string
                     submitted_by?: string
                     text?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'chat_messages_chat_room_fkey'
+                        columns: ['chat_room']
+                        isOneToOne: false
+                        referencedRelation: 'chat_rooms'
+                        referencedColumns: ['id']
+                    }
+                ]
+            }
+            chat_rooms: {
+                Row: {
+                    description: string
+                    id: number
+                    name: string
+                }
+                Insert: {
+                    description: string
+                    id?: number
+                    name: string
+                }
+                Update: {
+                    description?: string
+                    id?: number
+                    name?: string
                 }
                 Relationships: []
             }

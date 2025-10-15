@@ -7,19 +7,21 @@ function defineChatHandler() {
     return defineWebSocketHandler({
         open(peer) {
             const request = peer.request
+            const config = useRuntimeConfig()
 
             const serverClient = createServerClient(
-                process.env.SUPABASE_URL!,
-                process.env.SUPABASE_PUBLISHABLE_KEY!,
+                config.public.supabaseUrl,
+                config.public.supabasePublishableKey,
                 {
                     cookies: {
                         async getAll() {
-                            const cookie = request.headers.get('cookie')
+                            const cookie = request.headers.get('Cookie')
                             if (cookie) {
-                                return parseCookieHeader(cookie) as {
+                                const parsedHeader = parseCookieHeader(cookie) as {
                                     name: string
                                     value: string
                                 }[]
+                                return parsedHeader
                             }
                             return []
                         },
@@ -41,7 +43,7 @@ function defineChatHandler() {
                 peer.send({
                     success: true,
                     data: newMessage,
-                    errors: null
+                    error: null
                 })
             })
         },
@@ -50,8 +52,7 @@ function defineChatHandler() {
             try {
                 await chat.sendMessage(message.text())
             } catch (error) {
-                console.error('Something went wrong: ', error)
-                peer.send({ success: false, error: 'Something went wrong' })
+                peer.send({ success: false, data: null, error: 'Something went wrong' })
             }
         },
 

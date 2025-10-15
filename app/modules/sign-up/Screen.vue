@@ -22,9 +22,9 @@ const schema = z
 type Schema = z.output<typeof schema>
 
 const formState = reactive<Partial<Schema>>({
-    email: undefined,
-    password: undefined,
-    confirmPassword: undefined
+    email: '',
+    password: '',
+    confirmPassword: ''
 })
 
 const router = useRouter()
@@ -34,6 +34,7 @@ const handleSubmit = async (evt: FormSubmitEvent<Schema>) => {
         method: 'POST',
         body: evt.data
     })
+
     if (success) {
         router.push('/sign-in')
     }
@@ -73,6 +74,14 @@ const handleSubmit = async (evt: FormSubmitEvent<Schema>) => {
                 </UFormField>
                 <UButton label="Sign Up" type="submit" block />
             </UForm>
+        </template>
+        <template #footer>
+            <div class="flex flex-row items-center justify-between w-full">
+                <div>Already have an account?</div>
+                <NuxtLink :to="{ path: '/sign-in' }">
+                    <UButton variant="link" label="Sign in" />
+                </NuxtLink>
+            </div>
         </template>
     </UModal>
 </template>

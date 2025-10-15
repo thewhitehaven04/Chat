@@ -19,11 +19,25 @@ export default defineNuxtConfig({
     routeRules: {
         '/chat': {
             ssr: false
+        },
+        '/sign-in': {
+            ssr: false
+        },
+        '/sign-up': {
+            ssr: false
         }
     },
     components: [
         {
-            path: '~/modules',
+            path: '~/modules'
         }
-    ]
+    ],
+    runtimeConfig: {
+        supabaseUrl: process.env.SUPABASE_URL,
+        supabasePublishableKey: process.env.SUPABASE_KEY,
+        public: {
+            supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
+            supabasePublishableKey: process.env.NUXT_PUBLIC_PUBLISHABLE_KEY
+        }
+    },
 })
