@@ -39,5 +39,5 @@ export default defineNuxtConfig({
             supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
             supabasePublishableKey: process.env.NUXT_PUBLIC_PUBLISHABLE_KEY
         }
-    },
+    }
 })

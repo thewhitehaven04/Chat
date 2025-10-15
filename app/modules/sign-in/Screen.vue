@@ -21,7 +21,7 @@ const handleSubmit = async ({ data }: FormSubmitEvent<z.output<typeof schema>>) 
         email: data.email,
         password: data.password
     })
-    router.push('/chat')
+    router.push('/')
 }
 </script>
 

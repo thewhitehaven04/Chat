@@ -1,6 +1,12 @@
+<script setup lang="ts"></script>
+
 <template>
-    <AppFeaturesHeader />
-    <UMain>
-        <slot />
-    </UMain>
+    <div>
+        <UDashboardGroup>
+            <AppFeaturesChatSelectorSidebar />
+        </UDashboardGroup>
+        <UMain>
+            <slot />
+        </UMain>
+    </div>
 </template>

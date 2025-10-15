@@ -4,6 +4,7 @@ import { AuthService } from '../modules/auth/service'
 
 function defineChatHandler() {
     let chat: ChatService
+
     return defineWebSocketHandler({
         open(peer) {
             const request = peer.request
@@ -50,7 +51,7 @@ function defineChatHandler() {
 
         async message(peer, message) {
             try {
-                await chat.sendMessage(message.text())
+                await chat.sendMessage({ chatRoom: 1, text: message.text() })
             } catch (error) {
                 peer.send({ success: false, data: null, error: 'Something went wrong' })
             }

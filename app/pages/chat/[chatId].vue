@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import type { TChatMessage } from '~~/server/api/types'
+import type { IChatMessage } from '~~/server/modules/chat/models/types'
 
-definePageMeta({
-    layout: 'authorized'
-})
-
-const isPending = ref(true)
 const isDisconnected = ref(false)
 
-const messages = ref<string[]>([])
+const params = useRoute().params
+const messages = ref<IChatMessage[]>([])
+
+const { pending } = useFetch(`/api/${params.chatId}/history`, {
+    onResponse({ response }) {
+        if (response._data) {
+            messages.value = response._data?.messages
+        }
+    }
+})
+
+const isTextareaDisabled = ref(false)
 
 const message = defineModel<string>('message', {
     default: ''
@@ -16,17 +22,15 @@ const message = defineModel<string>('message', {
 
 const connection = new WebSocket(`ws://${location.host}/api/chat`)
 connection.addEventListener('open', () => {
-    isPending.value = false
+    isTextareaDisabled.value = false
 })
 
-connection.addEventListener('message', ({ data }: MessageEvent<TChatMessage>) => {
-    if (data.success) {
-        messages.value.push(data.data)
-    }
+connection.addEventListener('message', ({ data }: MessageEvent<IChatMessage>) => {
+    messages.value.push(data)
 })
 
 connection.addEventListener('close', () => {
-    isDisconnected.value = true
+    isTextareaDisabled.value = true
 })
 
 const handleSubmit = () => {
@@ -42,14 +46,18 @@ const handleKeyUp = (event: KeyboardEvent) => {
 </script>
 
 <template>
-    <UContainer class="flex flex-col h-full">
+    <UContainer>
         <div class="flex flex-1 w-full">
-            <div v-if="isPending" class="flex items-center justify-center h-full">Loading...</div>
+            <USkeleton v-if="pending" class="h-12 w-12 rounded-full" />
             <div v-else class="flex flex-col items-center justify-center flex-1 gap-4">
                 <div v-if="messages.length > 0">
-                    <span v-for="value in messages" :key="value" class="text-lg">
-                        {{ value }}
-                    </span>
+                    <ChatMessage
+                        v-for="m in messages"
+                        :key="m.id"
+                        :text="m.text"
+                        :submitted-at="m.submitted_at"
+                        :submitted-by="m.submitted_by"
+                    />
                 </div>
                 <span v-else> It's too empty in here... </span>
             </div>

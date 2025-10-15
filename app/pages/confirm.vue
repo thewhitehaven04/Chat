@@ -3,5 +3,5 @@
 </script>
 
 <template>
-    <span>Test</span>
+    <span>Placeholder</span>
 </template>
