@@ -20,18 +20,10 @@ const connection = new WebSocket(`ws://${location.host}/api/chat`)
 connection.addEventListener('open', () => {
     isTextareaDisabled.value = false
 })
-
-const chatRef = useTemplateRef('chat')
-
-connection.addEventListener('message', ({ data }: MessageEvent<IChatMessage>) => {
-    messages.value.push(data)
-    chatRef.value?.scrollIntoView({
-        behavior: 'instant',
-        block: 'end',
-        inline: 'nearest'
-    })
+connection.addEventListener('message', ({ data }: MessageEvent) => {
+    messages.value.push(JSON.parse(data) as IChatMessage)
+    scrollTargetRef.value?.scroll()
 })
-
 connection.addEventListener('close', () => {
     isTextareaDisabled.value = true
 })
@@ -44,9 +36,10 @@ const handleMessageSubmit = (message: string) => {
         })
     )
 }
-
 const showLoadingState = computed(() => pending.value)
 const showNoMessages = computed(() => messages.value.length === 0 && !pending.value)
+
+const scrollTargetRef = useTemplateRef('scrollTarget')
 </script>
 
 <template>
@@ -65,6 +58,7 @@ const showNoMessages = computed(() => messages.value.length === 0 && !pending.va
                 </li>
             </ul>
             <span v-if="showNoMessages"> It's too empty in here... </span>
+            <span ref="scrollTarget" />
         </div>
         <div v-if="isDisconnected" class="flex flex-col text-white bg-red-300 font-bold text-lg">
             You've been disconnected

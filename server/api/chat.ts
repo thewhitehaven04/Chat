@@ -41,7 +41,7 @@ function defineChatHandler() {
             chat = new ChatService(serverClient, new AuthService(serverClient))
 
             chat.subscribe((_, newMessage) => {
-                peer.send(newMessage)
+                peer.send(JSON.stringify(newMessage))
             })
         },
 

@@ -28,10 +28,9 @@ class ChatService {
             .channel('chat_messages_realtime')
             .on(
                 'postgres_changes',
-                { event: '*', schema: 'public', table: 'chat_messages' },
-                (payload) => { 
-                    console.log('subscription callback!')
-                    messageCallbackFn(payload.old, payload.new) 
+                { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+                (payload) => {
+                    messageCallbackFn(payload.old, payload.new)
                 }
             )
             .subscribe()
@@ -68,7 +67,7 @@ class ChatService {
                     count: 'exact'
                 })
                 .order('submitted_at', {
-                    ascending: true 
+                    ascending: true
                 })
                 .filter('chat_room', 'eq', params.chatRoom)
                 .limit(params.limit)
