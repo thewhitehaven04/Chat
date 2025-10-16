@@ -7,8 +7,8 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig()
 
     const serverClient = createServerClient(
-        config.public.supabaseUrl,
-        config.public.supabasePublishableKey,
+        config.public.supabaseUrl as string,
+        config.public.supabasePublishableKey as string,
         {
             cookies: {
                 getAll: async () => {

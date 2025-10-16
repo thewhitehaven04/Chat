@@ -14,7 +14,8 @@ const schema = z
             .min(8, {
                 error: 'Password must be at least 8 characters'
             })
-            .nonoptional()
+            .nonoptional(),
+        name: z.string().min(2, 'The name must be at least 2 characters long').nonoptional()
     })
     .refine((data) => data.password === data.confirmPassword, {
         error: 'Passwords do not match'
@@ -24,7 +25,8 @@ type Schema = z.output<typeof schema>
 const formState = reactive<Partial<Schema>>({
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    name: ''
 })
 
 const router = useRouter()
@@ -71,6 +73,9 @@ const handleSubmit = async (evt: FormSubmitEvent<Schema>) => {
                         placeholder="********"
                         class="w-full"
                     />
+                </UFormField>
+                <UFormField label="Nickname" name="name">
+                    <UInput id="name" v-model="formState.name" type="text" class="w-full" />
                 </UFormField>
                 <UButton label="Sign Up" type="submit" block />
             </UForm>

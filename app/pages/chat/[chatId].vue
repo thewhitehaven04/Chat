@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import type { IChatMessage } from '~~/server/modules/chat/models/types'
-
-const isDisconnected = ref(false)
+import { useChat } from '~/modules/chat/composables/useChat'
 
 const params = useRoute().params
-const messages = ref<IChatMessage[]>([])
 
 const { pending } = useFetch(`/api/${params.chatId}/history`, {
     onResponse({ response }) {
@@ -16,26 +13,13 @@ const { pending } = useFetch(`/api/${params.chatId}/history`, {
 
 const isTextareaDisabled = ref(false)
 
-const connection = new WebSocket(`ws://${location.host}/api/chat`)
-connection.addEventListener('open', () => {
-    isTextareaDisabled.value = false
-})
-connection.addEventListener('message', ({ data }: MessageEvent) => {
-    messages.value.push(JSON.parse(data) as IChatMessage)
-    scrollTargetRef.value?.scroll()
-})
-connection.addEventListener('close', () => {
-    isTextareaDisabled.value = true
+const { sendMessage, messages, isDisconnected } = useChat({
+    onNewMessage: () => {
+        scrollTargetRef.value?.scroll()
+    },
+    chatRoomId: params.chatId as string
 })
 
-const handleMessageSubmit = (message: string) => {
-    connection.send(
-        JSON.stringify({
-            chatRoom: Number(params.chatId),
-            text: message
-        })
-    )
-}
 const showLoadingState = computed(() => pending.value)
 const showNoMessages = computed(() => messages.value.length === 0 && !pending.value)
 
@@ -63,6 +47,9 @@ const scrollTargetRef = useTemplateRef('scrollTarget')
         <div v-if="isDisconnected" class="flex flex-col text-white bg-red-300 font-bold text-lg">
             You've been disconnected
         </div>
-        <ChatMessageSubmissionForm @message-submitted="handleMessageSubmit($event)" />
+        <ChatMessageSubmissionForm
+            :is-disabled="isTextareaDisabled"
+            @message-submitted="sendMessage($event)"
+        />
     </UContainer>
 </template>

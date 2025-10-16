@@ -1,5 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { ISignInInputDto, ISignUpInputDto, IUserDto } from '../../../shared/modules/auth/models/types'
+import type {
+    ISignInInputDto,
+    ISignUpInputDto,
+    IUserDto
+} from '../../../shared/modules/auth/models/types'
 
 class AuthService {
     client: SupabaseClient
@@ -9,7 +13,15 @@ class AuthService {
     }
 
     signUp(credentials: ISignUpInputDto) {
-        this.client.auth.signUp(credentials)
+        this.client.auth.signUp({
+            email: credentials.email,
+            password: credentials.password,
+            options: {
+                data: {
+                    name: credentials.name
+                }
+            }
+        })
     }
 
     async signIn(credentials: ISignInInputDto) {

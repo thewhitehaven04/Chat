@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
 
+defineProps<{
+    isDisabled: boolean
+}>()
+
 const emit = defineEmits<(e: 'message-submitted', value: string) => void>()
 const form = useTemplateRef('form')
 
