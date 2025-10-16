@@ -4,9 +4,9 @@
     <div>
         <UDashboardGroup>
             <AppFeaturesChatSelectorSidebar />
+            <UMain class="w-full py-4">
+                <slot />
+            </UMain>
         </UDashboardGroup>
-        <UMain>
-            <slot />
-        </UMain>
     </div>
 </template>

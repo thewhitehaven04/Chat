@@ -16,10 +16,6 @@ const { pending } = useFetch(`/api/${params.chatId}/history`, {
 
 const isTextareaDisabled = ref(false)
 
-const message = defineModel<string>('message', {
-    default: ''
-})
-
 const connection = new WebSocket(`ws://${location.host}/api/chat`)
 connection.addEventListener('open', () => {
     isTextareaDisabled.value = false
@@ -33,24 +29,22 @@ connection.addEventListener('close', () => {
     isTextareaDisabled.value = true
 })
 
-const handleSubmit = () => {
-    connection.send(message.value)
-    message.value = ''
-}
-
-const handleKeyUp = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-        handleSubmit()
-    }
+const handleMessageSubmit = (message: string) => {
+    connection.send(
+        JSON.stringify({
+            chatRoom: Number(params.chatId),
+            text: message
+        })
+    )
 }
 </script>
 
 <template>
-    <UContainer>
-        <div class="flex flex-1 w-full">
+    <UContainer class="flex flex-col gap-4 h-full">
+        <div class="flex-1 overflow-y-scroll">
             <USkeleton v-if="pending" class="h-12 w-12 rounded-full" />
-            <div v-else class="flex flex-col items-center justify-center flex-1 gap-4">
-                <div v-if="messages.length > 0">
+            <ul v-else>
+                <li class="flex flex-col items-start justify-center flex-1 gap-8">
                     <ChatMessage
                         v-for="m in messages"
                         :key="m.id"
@@ -58,29 +52,13 @@ const handleKeyUp = (event: KeyboardEvent) => {
                         :submitted-at="m.submitted_at"
                         :submitted-by="m.submitted_by"
                     />
-                </div>
-                <span v-else> It's too empty in here... </span>
-            </div>
-            <div
-                v-if="isDisconnected"
-                class="flex flex-col text-white bg-red-300 font-bold text-lg"
-            >
-                You've been disconnected
-            </div>
+                </li>
+            </ul>
+            <span v-if="messages.length === 0"> It's too empty in here... </span>
         </div>
-        <UForm @submit="handleSubmit">
-            <div class="flex flex-col items-center w-full gap-2">
-                <UTextarea
-                    v-model="message"
-                    name="message"
-                    class="w-full"
-                    placeholder="What do you think?"
-                    :rows="4"
-                    autoresize
-                    @keyup="handleKeyUp"
-                />
-                <UButton type="submit">Send</UButton>
-            </div>
-        </UForm>
+        <div v-if="isDisconnected" class="flex flex-col text-white bg-red-300 font-bold text-lg">
+            You've been disconnected
+        </div>
+        <ChatMessageSubmissionForm @submit-message="handleMessageSubmit" />
     </UContainer>
 </template>

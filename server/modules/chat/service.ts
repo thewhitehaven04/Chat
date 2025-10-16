@@ -75,7 +75,7 @@ class ChatService {
             (
                 await this.client
                     .from('chat_messages')
-                    .select('COUNT(*)')
+                    .select('*')
                     .filter('chat_room', 'eq', params.chatRoom)
                     .throwOnError()
             ).count

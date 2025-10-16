@@ -1,6 +1,7 @@
 import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@supabase/ssr'
 import { ChatService } from '../modules/chat/service'
 import { AuthService } from '../modules/auth/service'
+import type { IMessageInputDto } from '~~/server/modules/chat/models/types'
 
 function defineChatHandler() {
     let chat: ChatService
@@ -40,18 +41,15 @@ function defineChatHandler() {
 
             chat = new ChatService(serverClient, new AuthService(serverClient))
 
-            chat.subscribe((oldMessage, newMessage) => {
-                peer.send({
-                    success: true,
-                    data: newMessage,
-                    error: null
-                })
+            chat.subscribe((_, newMessage) => {
+                peer.send(newMessage)
             })
         },
 
         async message(peer, message) {
+            const messageDto = message.json<IMessageInputDto>()
             try {
-                await chat.sendMessage({ chatRoom: 1, text: message.text() })
+                await chat.sendMessage(messageDto)
             } catch (error) {
                 peer.send({ success: false, data: null, error: 'Something went wrong' })
             }

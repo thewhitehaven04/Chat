@@ -5,35 +5,38 @@ const props = defineProps<{
     submittedBy: string
     text: string
 }>()
-
-const currentUser = ref('You')
-
-const isCurrentUser = computed(() => props.submittedBy === currentUser.value)
 </script>
 
 <template>
-    <div class="flex items-start gap-2" :class="{ 'justify-end': isCurrentUser }">
-        <UAvatar v-if="!isCurrentUser" :alt="props.submittedBy" size="sm" />
-
-        <UCard
-            class="max-w-[70%]"
-            :class="{
-                'bg-primary-500 text-white': isCurrentUser,
-                'bg-gray-100 dark:bg-gray-700': !isCurrentUser
-            }"
-        >
-            <p class="text-sm px-3 py-2">{{ text }}</p>
-            <div
-                class="text-xs text-right mt-1 px-3 py-2"
-                :class="{
-                    'text-gray-200': isCurrentUser,
-                    'text-gray-500 dark:text-gray-400': !isCurrentUser
-                }"
-            >
-                {{ props.submittedBy }} at {{ format(submittedAt, 'hh:mm') }}
-            </div>
-        </UCard>
-
-        <UAvatar v-if="isCurrentUser" :alt="props.submittedBy" size="sm" />
+    <div class="grid-message-container">
+        <UAvatar class="grid-avatar" size="3xl"/>
+        <span class="grid-date text-neutral-500 text-sm">{{ format(props.submittedAt, 'dd:MM HH:mm:ss') }}</span>
+        <p class="grid-text">{{ props.text }}</p>
     </div>
 </template>
+
+<style scoped>
+.grid-message-container {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    grid-template-rows: min-content 1fr;
+    column-gap: 8px;
+    width: 100%;
+}
+
+.grid-avatar {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: start;
+}
+
+.grid-date {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.grid-text {
+    grid-column: 2;
+    grid-row: 2;
+}
+</style>
