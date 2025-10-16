@@ -19,11 +19,10 @@ function defineChatHandler() {
                         async getAll() {
                             const cookie = request.headers.get('Cookie')
                             if (cookie) {
-                                const parsedHeader = parseCookieHeader(cookie) as {
+                                return parseCookieHeader(cookie) as {
                                     name: string
                                     value: string
                                 }[]
-                                return parsedHeader
                             }
                             return []
                         },
@@ -50,7 +49,7 @@ function defineChatHandler() {
             const messageDto = message.json<IMessageInputDto>()
             try {
                 await chat.sendMessage(messageDto)
-            } catch (error) {
+            } catch (_error) {
                 peer.send({ success: false, data: null, error: 'Something went wrong' })
             }
         },

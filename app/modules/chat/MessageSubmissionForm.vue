@@ -1,46 +1,36 @@
 <script setup lang="ts">
-import z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
-const emit = defineEmits(['submitMessage'])
-
-const schema = z.object({
-    message: z.string().min(1)
-})
+const emit = defineEmits<(e: 'message-submitted', value: string) => void>()
+const form = useTemplateRef('form')
 
 const formState = reactive({
     message: ''
 })
 
-const sendMessage = (message: string) => {
-    emit('submitMessage', message)
+const handleSubmit = (evt: FormSubmitEvent<{ message: string }>) => {
+    emit('message-submitted', evt.data.message)
     formState.message = ''
-}
-
-const handleSubmit = (evt: FormSubmitEvent<z.output<typeof schema>>) => {
-    sendMessage(evt.data.message)
 }
 
 const handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault()
-        sendMessage(formState.message)
+        form.value?.submit()
     }
 }
 </script>
 
 <template>
-    <UForm :state="formState" :schema="schema" @submit="handleSubmit">
-        <div class="flex flex-col items-center w-full gap-2">
+    <UForm ref="form" :state="formState" @submit="handleSubmit($event)">
+        <UFormField name="message">
             <UTextarea
-                name="message"
+                v-model="formState.message"
                 class="w-full"
                 placeholder="What do you think?"
                 :rows="4"
                 autoresize
-                @keyup="handleKeyUp"
+                @keyup="handleKeyUp($event)"
             />
-            <UButton type="submit">Send</UButton>
-        </div>
+        </UFormField>
     </UForm>
 </template>

@@ -21,8 +21,15 @@ connection.addEventListener('open', () => {
     isTextareaDisabled.value = false
 })
 
+const chatRef = useTemplateRef('chat')
+
 connection.addEventListener('message', ({ data }: MessageEvent<IChatMessage>) => {
     messages.value.push(data)
+    chatRef.value?.scrollIntoView({
+        behavior: 'instant',
+        block: 'end',
+        inline: 'nearest'
+    })
 })
 
 connection.addEventListener('close', () => {
@@ -37,12 +44,15 @@ const handleMessageSubmit = (message: string) => {
         })
     )
 }
+
+const showLoadingState = computed(() => pending.value)
+const showNoMessages = computed(() => messages.value.length === 0 && !pending.value)
 </script>
 
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
-        <div class="flex-1 overflow-y-scroll">
-            <USkeleton v-if="pending" class="h-12 w-12 rounded-full" />
+        <div ref="chat" class="flex-1 overflow-y-scroll">
+            <USkeleton v-if="showLoadingState" class="h-12 w-12 rounded-full" />
             <ul v-else>
                 <li class="flex flex-col items-start justify-center flex-1 gap-8">
                     <ChatMessage
@@ -54,11 +64,11 @@ const handleMessageSubmit = (message: string) => {
                     />
                 </li>
             </ul>
-            <span v-if="messages.length === 0"> It's too empty in here... </span>
+            <span v-if="showNoMessages"> It's too empty in here... </span>
         </div>
         <div v-if="isDisconnected" class="flex flex-col text-white bg-red-300 font-bold text-lg">
             You've been disconnected
         </div>
-        <ChatMessageSubmissionForm @submit-message="handleMessageSubmit" />
+        <ChatMessageSubmissionForm @message-submitted="handleMessageSubmit($event)" />
     </UContainer>
 </template>
