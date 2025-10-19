@@ -3,14 +3,28 @@ import { format } from 'date-fns'
 const props = defineProps<{
     submittedAt: string
     submittedBy: string
+    avatarUrl: string | null
     text: string
 }>()
 </script>
 
 <template>
     <div class="grid-message-container">
-        <UAvatar class="grid-avatar" size="3xl"/>
-        <span class="grid-date text-neutral-500 text-sm">{{ format(props.submittedAt, 'dd:MM HH:mm:ss') }}</span>
+        <UAvatar class="grid-avatar" size="3xl" />
+        <div class="flex flex-row gap-2 grid-sender">
+            <UPopover>
+                <template #anchor>
+                    {{ props.submittedBy }}
+                </template>
+                <div class="flex flex-row gap-2">
+                    <UAvatar :src="props.avatarUrl ?? undefined" />
+                    {{ props.submittedBy }}
+                </div>
+            </UPopover>
+            <span class="text-neutral-500 text-sm">{{
+                format(props.submittedAt, 'dd:MM HH:mm:ss')
+            }}</span>
+        </div>
         <p class="grid-text">{{ props.text }}</p>
     </div>
 </template>
@@ -30,7 +44,7 @@ const props = defineProps<{
     align-self: start;
 }
 
-.grid-date {
+.grid-sender {
     grid-column: 2;
     grid-row: 1;
 }

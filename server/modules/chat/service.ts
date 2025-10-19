@@ -63,7 +63,7 @@ class ChatService {
         const [response, count, chatData] = await Promise.all([
             this.client
                 .from('chat_messages')
-                .select('*', {
+                .select('*, profiles(*)', {
                     count: 'exact'
                 })
                 .order('submitted_at', {
@@ -97,7 +97,14 @@ class ChatService {
                 name: chatData.data.name,
                 description: chatData.data.description
             },
-            messages: response.data,
+            messages: response.data.map((message) => ({
+                ...message,
+                submitted_by: {
+                    id: message.profiles.id,
+                    name: message.profiles.name,
+                    avatarUrl: message.profiles.avatar_url
+                }
+            })),
             hasMore
         }
     }

@@ -1,7 +1,7 @@
 <script setup>
 const { data } = useFetch('/api/user') 
 
-watch(data, () => {
+onBeforeMount(() => {
     if (data.value?.email && data.value?.id) {
         navigateTo('/')
     }

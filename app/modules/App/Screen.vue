@@ -3,7 +3,7 @@
 <template>
     <div>
         <UDashboardGroup>
-            <AppFeaturesChatSelectorSidebar />
+            <AppFeaturesSidebar />
             <UMain class="w-full py-4">
                 <slot />
             </UMain>

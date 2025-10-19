@@ -2,6 +2,7 @@ import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@s
 import { AuthService } from '../modules/auth/service'
 import { ChatService } from '../modules/chat/service'
 import { ChatRoomsService } from '~~/server/modules/chats/service'
+import { ProfileService } from '~~/server/modules/profile/service'
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig()
@@ -33,4 +34,5 @@ export default defineEventHandler(async (event) => {
     event.context.auth = auth
     event.context.chat = new ChatService(serverClient, auth)
     event.context.chatRooms = new ChatRoomsService(serverClient)
+    event.context.profile = new ProfileService(serverClient, auth)
 })

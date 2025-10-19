@@ -40,6 +40,13 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: 'chat_rooms'
                         referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'chat_messages_submitted_by_fkey'
+                        columns: ['submitted_by']
+                        isOneToOne: false
+                        referencedRelation: 'profiles'
+                        referencedColumns: ['id']
                     }
                 ]
             }

@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import type { FormSubmitEvent } from '@nuxt/ui'
 import z from 'zod'
+import type { IChatCreateDto } from '~~/server/modules/chats/models/types'
 
-defineProps<{
-    isOpen: boolean
-}>()
-const emit = defineEmits<(e: 'chat-created', value: z.output<typeof creationModalSchema>) => void>()
+const isOpen = ref(false)
+const { refresh: refreshChatRooms } = useFetch('/api/chat/rooms')
 
 const creationModalSchema = z.object({
     name: z.string().min(3, 'Use a descriptive name that is at least 3 chatacters long'),
@@ -17,20 +15,34 @@ const formState = reactive({
     description: ''
 })
 
-const handleSubmit = (evt: FormSubmitEvent<z.output<typeof creationModalSchema>>) => {
-    emit('chat-created', evt.data)
+const handleChatCreate = async (data: IChatCreateDto) => {
+    await $fetch('/api/chat/room', {
+        method: 'POST',
+        body: data,
+        onResponse: ({ error }) => {
+            if (!error) {
+                refreshChatRooms()
+            }
+        }
+    })
+    isOpen.value = false
+}
+
+const handleChatCreateOpen = () => {
+    isOpen.value = true
 }
 </script>
 
 <template>
-    <UModal :open="$props.isOpen" title="Create chat room">
+    <UButton variant="soft" @click="handleChatCreateOpen()">Create chat room</UButton>
+    <UModal :open="isOpen" title="Create chat room">
         <template #body>
             <UForm
                 id="chatRoomCreate"
                 class="space-y-4 flex flex-col gap-4"
                 :schema="creationModalSchema"
                 :state="formState"
-                @submit="handleSubmit($event)"
+                @submit="handleChatCreate($event)"
             >
                 <UFormField label="Name" name="name">
                     <UInput id="name" v-model="formState.name" type="text" class="w-full" />

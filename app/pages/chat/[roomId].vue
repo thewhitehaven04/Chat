@@ -42,7 +42,8 @@ const scrollTargetRef = useTemplateRef('scrollTarget')
                         :key="m.id"
                         :text="m.text"
                         :submitted-at="m.submitted_at"
-                        :submitted-by="m.submitted_by"
+                        :submitted-by="m.submitted_by.name"
+                        :avatar-url="m.submitted_by.avatarUrl"
                     />
                 </li>
             </ul>
