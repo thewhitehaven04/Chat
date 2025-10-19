@@ -1,3 +1,5 @@
+import type { IChatDto } from '~~/server/modules/chats/models/types'
+
 export interface IMessageInputDto {
     chatRoom: number
     text: string
@@ -18,6 +20,7 @@ export interface IChatMessage {
 }
 
 export interface IChatHistoryResponse {
+    chat: IChatDto 
     messages: IChatMessage[]
     hasMore: boolean
 }

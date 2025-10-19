@@ -60,7 +60,7 @@ class ChatService {
     }
 
     async getChatHistory(params: IGetChatHistoryRequestDto): Promise<IChatHistoryResponse> {
-        const [response, count] = await Promise.all([
+        const [response, count, chatData] = await Promise.all([
             this.client
                 .from('chat_messages')
                 .select('*', {
@@ -78,7 +78,13 @@ class ChatService {
                     .select('*')
                     .filter('chat_room', 'eq', params.chatRoom)
                     .throwOnError()
-            ).count
+            ).count,
+            this.client
+                .from('chat_rooms')
+                .select('*')
+                .filter('id', 'eq', params.chatRoom)
+                .single()
+                .throwOnError()
         ])
         let hasMore = false
         if (count && response.count) {
@@ -86,6 +92,11 @@ class ChatService {
         }
 
         return {
+            chat: {
+                id: chatData.data.id,
+                name: chatData.data.name,
+                description: chatData.data.description
+            },
             messages: response.data,
             hasMore
         }
