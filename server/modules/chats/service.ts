@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { IChatCreateDto } from '~~/server/modules/chats/models/types'
 import type { Database } from '~~/server/supabase'
 
 class ChatRoomsService {
@@ -10,6 +11,10 @@ class ChatRoomsService {
 
     async getChatRooms() {
         return (await this.client.from('chat_rooms').select('*').throwOnError()).data
+    }
+
+    async createChatRoom(chatRoom: IChatCreateDto) {
+        return (await this.client.from('chat_rooms').insert(chatRoom).throwOnError()).data
     }
 }
 

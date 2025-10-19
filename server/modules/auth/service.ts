@@ -3,7 +3,7 @@ import type {
     ISignInInputDto,
     ISignUpInputDto,
     IUserDto
-} from '../../../shared/modules/auth/models/types'
+} from '~~/shared/modules/auth/models/types'
 
 class AuthService {
     client: SupabaseClient

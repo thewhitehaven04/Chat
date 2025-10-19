@@ -1,5 +1,8 @@
-export interface IChatDto {
-    id: number
+export interface IChatCreateDto {
     name: string
-    description: string
+    description: string | null
+}
+
+export interface IChatDto extends IChatCreateDto {
+    id: number
 }

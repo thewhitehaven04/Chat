@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import type { IChatCreateDto } from '~~/server/modules/chats/models/types'
 
-const { data: chatRooms } = useFetch('/api/chat/rooms')
+const { data: chatRooms, refresh: refreshChatRooms } = useFetch('/api/chat/rooms')
 const { data: user } = useFetch('/api/user')
 
 const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
@@ -17,6 +18,24 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
         }
     ]
 ])
+
+const isCreateModalOpen = ref(false)
+
+const handleChatCreate = async (data: IChatCreateDto) => {
+    await $fetch('/api/chat/room', {
+        method: 'POST',
+        body: data,
+        onResponse: ({ error }) => {
+            if (!error) {
+                refreshChatRooms()
+            }
+        }
+    })
+    isCreateModalOpen.value = false
+}
+const handleChatCreateOpen = () => {
+    isCreateModalOpen.value = true
+}
 </script>
 
 <template>
@@ -30,15 +49,25 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
                 :collapsed="collapsed"
                 variant="pill"
                 :items="items[0]"
-            />
+            >
+                <template #list-leading>
+                    <UButton variant="soft" @click="handleChatCreateOpen()"
+                        >Create chat room</UButton
+                    >
+                </template>
+            </UNavigationMenu>
         </template>
         <template #footer>
             <div class="flex flex-row gap-4">
                 <UAvatar size="md" />
             </div>
-            <span>
+            <div class="overflow-ellipsis w-full">
                 {{ user?.email }}
-            </span>
+            </div>
         </template>
     </UDashboardSidebar>
+    <AppFeaturesChatRoomCreationModal
+        :is-open="isCreateModalOpen"
+        @chat-created="handleChatCreate($event)"
+    />
 </template>

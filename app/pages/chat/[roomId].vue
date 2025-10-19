@@ -3,12 +3,12 @@ import { useChat } from '~/modules/chat/composables/useChat'
 
 const params = useRoute().params
 
-const { pending } = useFetch(`/api/${params.chatId}/history`, {
+const { pending } = useFetch(`/api/chat/${params.roomId}/history`, {
     onResponse({ response }) {
         if (response._data) {
             messages.value = response._data?.messages
         }
-    }
+    },
 })
 
 const isTextareaDisabled = ref(false)

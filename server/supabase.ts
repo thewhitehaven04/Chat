@@ -45,18 +45,36 @@ export type Database = {
             }
             chat_rooms: {
                 Row: {
-                    description: string
+                    description: string | null
                     id: number
                     name: string
                 }
                 Insert: {
-                    description: string
+                    description?: string | null
                     id?: number
                     name: string
                 }
                 Update: {
-                    description?: string
+                    description?: string | null
                     id?: number
+                    name?: string
+                }
+                Relationships: []
+            }
+            profiles: {
+                Row: {
+                    avatar_url: string | null
+                    id: string
+                    name: string
+                }
+                Insert: {
+                    avatar_url?: string | null
+                    id: string
+                    name: string
+                }
+                Update: {
+                    avatar_url?: string | null
+                    id?: string
                     name?: string
                 }
                 Relationships: []
