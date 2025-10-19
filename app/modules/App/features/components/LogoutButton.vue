@@ -9,7 +9,13 @@ const handleLogout = async () => {
 </script>
 
 <template>
-    <UButton type="button" variant="soft" color="error" class="w-full" @click="handleLogout()"
+    <UButton
+        type="button"
+        variant="soft"
+        color="error"
+        class="w-full"
+        icon="i-lucide-logout"
+        @click="handleLogout()"
         >Logout</UButton
     >
 </template>

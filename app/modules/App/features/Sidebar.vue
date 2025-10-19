@@ -38,7 +38,7 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
         </template>
         <template #footer>
             <div class="flex flex-col gap-2">
-                <div class="flex flex-row gap-4">
+                <div class="flex flex-row gap-4 items-center">
                     <UAvatar size="md" :src="profile?.avatarUrl ?? undefined" />
                     <div class="overflow-ellipsis w-full">
                         {{ profile?.name }}

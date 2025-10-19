@@ -27,18 +27,17 @@ export class ProfileService {
     }
 
     async getProfileData(profileId: string): Promise<IProfile> {
-        const { data } = await this.supabaseClient
+        const profiles = await this.supabaseClient
             .from('profiles')
-            .select('*')
+            .select('id, name, avatar_url')
             .filter('id', 'eq', profileId)
             .single()
             .throwOnError()
-
         const avatarUrl = this.#getAvatarUrl(profileId)
 
         return {
-            id: data.id,
-            name: data.name,
+            id: profiles.data.id,
+            name: profiles.data.name,
             avatarUrl: avatarUrl || null
         }
     }
