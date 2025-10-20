@@ -11,10 +11,13 @@ defineProps<IMessageSequenceProps>()
                 <template #anchor>
                     <span class="text-primary-500">{{ $props.submittedBy.name }}</span>
                 </template>
+
                 <template #default>
                     <div class="flex flex-row items-start gap-2">
                         <div class="flex flex-row gap-2 items-baseline">
-                            <div class="hover:underline text-primary-700 font-medium">{{ $props.submittedBy.name }}</div>
+                            <div class="hover:underline text-primary-700 font-medium">
+                                {{ $props.submittedBy.name }}
+                            </div>
                             <div class="text-neutral-500 text-xs">
                                 {{ format($props.messages[0]!.submittedAt, 'MMM dd HH:mm:ss') }}
                             </div>
@@ -28,7 +31,7 @@ defineProps<IMessageSequenceProps>()
                 {{ m.text }}
             </li>
         </ul>
-        <UAvatar size="lg" class="grid-avatar" :src="$props.avatarUrl ?? undefined" />
+        <UAvatar size="xl" class="grid-avatar" :src="$props.avatarUrl ?? undefined" />
     </div>
 </template>
 

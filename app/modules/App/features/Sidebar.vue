@@ -24,10 +24,9 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
         <template #header>
             <span>Multichat</span>
         </template>
-        <template #default="{ collapsed }">
+        <template #default>
             <UNavigationMenu
                 orientation="vertical"
-                :collapsed="collapsed"
                 variant="pill"
                 :items="items[0]"
             >
@@ -37,7 +36,7 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
             </UNavigationMenu>
         </template>
         <template #footer>
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2 w-full">
                 <div class="flex flex-row gap-4 items-center">
                     <UAvatar size="md" :src="profile?.avatarUrl ?? undefined" />
                     <div class="overflow-ellipsis w-full">

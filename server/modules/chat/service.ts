@@ -45,8 +45,9 @@ class ChatService {
                         Database['public']['Tables']['chat_messages']['Row']
                     >
                 ) => {
-                    const profile = await this.profileSerivce.getProfileData(payload.new.submitted_by)
-                    console.log('prfoile', profile)
+                    const profile = await this.profileSerivce.getProfileData(
+                        payload.new.submitted_by
+                    )
                     messageCallbackFn(
                         { ...payload.old, submitted_by: profile },
                         { ...payload.new, submitted_by: profile }
@@ -57,20 +58,13 @@ class ChatService {
     }
 
     async sendMessage(message: IMessageInputDto) {
-        const user = await this.authSerivce.getUser()
-
-        if (user.id) {
-            return await this.client
-                .from('chat_messages')
-                .insert({
-                    text: message.text,
-                    submitted_by: user.id,
-                    chat_room: message.chatRoom
-                })
-                .throwOnError()
-        } else {
-            throw new Error('Sender is not logged in')
-        }
+        return await this.client
+            .from('chat_messages')
+            .insert({
+                text: message.text,
+                chat_room: message.chatRoom
+            })
+            .throwOnError()
     }
 
     unsubscribe() {

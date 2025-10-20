@@ -12,11 +12,6 @@ export class ProfileService {
         this.authService = authService
     }
 
-    #getAvatarUrl(profileId: string) {
-        return this.supabaseClient.storage.from('profileImages').getPublicUrl(profileId).data
-            .publicUrl
-    }
-
     async getCurrentProfile() {
         const userId = (await this.authService.getUser()).id
 
@@ -33,12 +28,11 @@ export class ProfileService {
             .filter('id', 'eq', profileId)
             .single()
             .throwOnError()
-        const avatarUrl = this.#getAvatarUrl(profileId)
 
         return {
             id: profiles.data.id,
             name: profiles.data.name,
-            avatarUrl: avatarUrl || null
+            avatarUrl: profiles.data.avatar_url
         }
     }
 }

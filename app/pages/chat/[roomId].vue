@@ -18,12 +18,11 @@ watch(chatMessages, (input) => {
         const messageSequence: IMessageSequenceProps[] = []
 
         for (let i = 0; i < input.messages.length; i++) {
-            const previousSender = i > 0 ? messageSequence.at(-1)?.submittedBy.id : null
-
+            const currentSequence = messageSequence.at(-1)
             const message = input.messages[i]
 
             if (message) {
-                if (message.submitted_by.id !== previousSender) {
+                if (message.submitted_by.id !== currentSequence?.submittedBy.id) {
                     messageSequence.push({
                         id: message.id,
                         avatarUrl: message.submitted_by.avatarUrl,
@@ -39,15 +38,14 @@ watch(chatMessages, (input) => {
                         ]
                     })
                 } else {
-                    messageSequence.at(-1)!.messages.push({
+                    currentSequence.messages.push({
                         text: message?.text,
                         submittedAt: message.submitted_at
                     })
                 }
             }
-
-            messages.value = messageSequence
         }
+        messages.value = messageSequence
     }
 })
 
@@ -57,6 +55,11 @@ const showLoadingState = computed(() => pending.value)
 const showNoMessages = computed(() => messages.value.length === 0 && !pending.value)
 
 const scrollTargetRef = useTemplateRef('scrollTarget')
+
+const router = useRouter()
+const onClose = () => {
+    router.push('/')
+}
 </script>
 
 <template>
@@ -64,9 +67,12 @@ const scrollTargetRef = useTemplateRef('scrollTarget')
         <UHeader>
             <template #left>
                 <div class="flex flex-col gap-2 mb-4">
-                    <h1 class="text-xl font-bold">{{ chatMessages?.chat.name }}</h1>
+                    <h1 v-if="!pending" class="text-xl font-bold">{{ chatMessages?.chat.name }}</h1>
                     <p class="text-neutral-700">{{ chatMessages?.chat.description }}</p>
                 </div>
+            </template>
+            <template #right>
+                <UButton variant="ghost" icon="i-lucide-x" @click="onClose()"/>
             </template>
         </UHeader>
         <div ref="chat" class="flex-1 overflow-y-scroll">

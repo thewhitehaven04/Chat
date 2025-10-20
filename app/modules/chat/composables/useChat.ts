@@ -29,9 +29,9 @@ export function useChat(options: UseChatOptions) {
     }
 
     const _pushMessage = (newMessage: IChatMessage) => {
-        const lastMessage = messages.value.at(-1)
-        if (newMessage.submitted_by.id === lastMessage?.submittedBy.id) {
-            lastMessage.messages.push({
+        const currentSequence = messages.value.at(-1)
+        if (newMessage.submitted_by.id === currentSequence?.submittedBy.id) {
+            currentSequence.messages.push({
                 text: newMessage.text,
                 submittedAt: newMessage.submitted_at
             })
