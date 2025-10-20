@@ -8,7 +8,10 @@ const { pending, data: chatMessages } = useFetch(`/api/chat/${params.roomId}/his
 
 const { sendMessage, messages, isDisconnected } = useChat({
     onNewMessage: () => {
-        scrollTargetRef.value?.scroll()
+        scrollTargetRef.value?.scrollIntoView({
+            block: 'end',
+            behavior: 'smooth'
+        })
     },
     chatRoomId: params.roomId as string
 })
@@ -72,13 +75,16 @@ const onClose = () => {
                 </div>
             </template>
             <template #right>
-                <UButton variant="ghost" icon="i-lucide-x" @click="onClose()"/>
+                <UButton variant="ghost" icon="i-lucide-x" @click="onClose()" />
             </template>
         </UHeader>
         <div ref="chat" class="flex-1 overflow-y-scroll">
             <USkeleton v-if="showLoadingState" class="h-12 w-12 rounded-full" />
             <ul v-else>
-                <li class="flex flex-col items-start justify-center flex-1 gap-8 w-full">
+                <li
+                    ref="scrollTarget"
+                    class="flex flex-col items-start justify-center flex-1 gap-8 w-full"
+                >
                     <ChatFeaturesMessageSequence
                         v-for="m in messages"
                         :id="m.id"
@@ -89,7 +95,6 @@ const onClose = () => {
                     />
                 </li>
             </ul>
-            <span ref="scrollTarget" />
         </div>
         <div class="flex flex-col items-center justify-center">
             <div v-if="showNoMessages">It's too empty in here...</div>
