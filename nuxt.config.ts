@@ -17,13 +17,7 @@ export default defineNuxtConfig({
         }
     },
     routeRules: {
-        '/chat/*': {
-            ssr: false
-        },
-        '/sign-in': {
-            ssr: false
-        },
-        '/sign-up': {
+        '*': {
             ssr: false
         }
     },

@@ -32,7 +32,8 @@ export default defineEventHandler(async (event) => {
 
     const auth = new AuthService(serverClient)
     event.context.auth = auth
-    event.context.chat = new ChatService(serverClient, auth)
+    const profile = new ProfileService(serverClient, auth)
+    event.context.profile = profile
+    event.context.chat = new ChatService(serverClient, auth, profile)
     event.context.chatRooms = new ChatRoomsService(serverClient)
-    event.context.profile = new ProfileService(serverClient, auth)
 })

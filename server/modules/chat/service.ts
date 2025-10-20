@@ -1,4 +1,8 @@
-import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
+import type {
+    RealtimeChannel,
+    RealtimePostgresInsertPayload,
+    SupabaseClient
+} from '@supabase/supabase-js'
 import type { AuthService } from '../auth/service'
 import type { Database } from '~~/server/supabase'
 import type {
@@ -6,15 +10,22 @@ import type {
     IGetChatHistoryRequestDto,
     IMessageInputDto
 } from '~~/server/modules/chat/models/types'
+import type { ProfileService } from '~~/server/modules/profile/service'
 
 class ChatService {
     client: SupabaseClient<Database>
     authSerivce: AuthService
+    profileSerivce: ProfileService
     subscriptionChannel: RealtimeChannel | null
 
-    constructor(client: SupabaseClient<Database>, authService: AuthService) {
+    constructor(
+        client: SupabaseClient<Database>,
+        authService: AuthService,
+        profileService: ProfileService
+    ) {
         this.client = client
         this.authSerivce = authService
+        this.profileSerivce = profileService
         this.subscriptionChannel = null
     }
 
@@ -29,8 +40,17 @@ class ChatService {
             .on(
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-                (payload) => {
-                    messageCallbackFn(payload.old, payload.new)
+                async (
+                    payload: RealtimePostgresInsertPayload<
+                        Database['public']['Tables']['chat_messages']['Row']
+                    >
+                ) => {
+                    const profile = await this.profileSerivce.getProfileData(payload.new.submitted_by)
+                    console.log('prfoile', profile)
+                    messageCallbackFn(
+                        { ...payload.old, submitted_by: profile },
+                        { ...payload.new, submitted_by: profile }
+                    )
                 }
             )
             .subscribe()
