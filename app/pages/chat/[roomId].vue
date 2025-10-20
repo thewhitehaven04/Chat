@@ -1,12 +1,24 @@
 <script setup lang="ts">
 import { useChat } from '~/modules/chat/composables/useChat'
-import type { IMessageSequenceProps } from '~/modules/chat/models/types'
+import type { IChatMessage } from '~~/server/modules/chat/models/types'
 
 const params = useRoute().params
 
-const { pending, data: chatMessages } = useFetch(`/api/chat/${params.roomId}/history`)
+const skip = ref(0)
 
-const { sendMessage, messages, isDisconnected } = useChat({
+const { pending, data } = useFetch(`/api/chat/${params.roomId}/history`, {
+    onResponse: ({ response }) => {
+        prependMessages(response._data.messages as IChatMessage[])
+    },
+    query: {
+        limit: 30,
+        skip: skip.value
+    }
+})
+
+const isTextareaDisabled = ref(true)
+
+const { sendMessage, messages, isDisconnected, prependMessages } = useChat({
     onNewMessage: () => {
         scrollTargetRef.value?.scrollIntoView({
             block: 'end',
@@ -16,53 +28,45 @@ const { sendMessage, messages, isDisconnected } = useChat({
     chatRoomId: params.roomId as string
 })
 
-watch(chatMessages, (input) => {
-    if (input) {
-        const messageSequence: IMessageSequenceProps[] = []
-
-        for (let i = 0; i < input.messages.length; i++) {
-            const currentSequence = messageSequence.at(-1)
-            const message = input.messages[i]
-
-            if (message) {
-                if (message.submitted_by.id !== currentSequence?.submittedBy.id) {
-                    messageSequence.push({
-                        id: message.id,
-                        avatarUrl: message.submitted_by.avatarUrl,
-                        submittedBy: {
-                            id: message.submitted_by.id,
-                            name: message.submitted_by.name
-                        },
-                        messages: [
-                            {
-                                text: message.text,
-                                submittedAt: message.submitted_at
-                            }
-                        ]
-                    })
-                } else {
-                    currentSequence.messages.push({
-                        text: message?.text,
-                        submittedAt: message.submitted_at
-                    })
-                }
-            }
-        }
-        messages.value = messageSequence
-    }
-})
-
-const isTextareaDisabled = ref(false)
+const handleLoadMore = () => {
+    skip.value += 30
+}
 
 const showLoadingState = computed(() => pending.value)
 const showNoMessages = computed(() => messages.value.length === 0 && !pending.value)
 
 const scrollTargetRef = useTemplateRef('scrollTarget')
+const firstMessageRef = useTemplateRef('firstMessage')
+
+const observer = new IntersectionObserver(
+    () => {
+        if (data.value.hasMore) {
+            handleLoadMore()
+        }
+    },
+    {
+        root: scrollTargetRef.value,
+        threshold: 0
+    }
+)
+
+onMounted(() => {
+    if (firstMessageRef.value?.rootRef) {
+        observer.observe(firstMessageRef.value.rootRef)
+    }
+})
+
+onUnmounted(() => {
+    observer.disconnect()
+})
 
 const router = useRouter()
 const onClose = () => {
     router.push('/')
 }
+
+const first = computed(() => messages.value[0])
+const chatMessages = computed(() => messages.value.slice(1))
 </script>
 
 <template>
@@ -70,8 +74,8 @@ const onClose = () => {
         <UHeader>
             <template #left>
                 <div class="flex flex-col gap-2 mb-4">
-                    <h1 v-if="!pending" class="text-xl font-bold">{{ chatMessages?.chat.name }}</h1>
-                    <p class="text-neutral-700">{{ chatMessages?.chat.description }}</p>
+                    <h1 v-if="!pending" class="text-xl font-bold">{{ data?.chat.name }}</h1>
+                    <p class="text-neutral-700">{{ data?.chat.description }}</p>
                 </div>
             </template>
             <template #right>
@@ -86,7 +90,15 @@ const onClose = () => {
                     class="flex flex-col items-start justify-center flex-1 gap-8 w-full"
                 >
                     <ChatFeaturesMessageSequence
-                        v-for="m in messages"
+                        v-if="first"
+                        :id="first.id"
+                        ref="firstMessage"
+                        :avatar-url="first.avatarUrl"
+                        :submitted-by="first?.submittedBy"
+                        :messages="first?.messages"
+                    />
+                    <ChatFeaturesMessageSequence
+                        v-for="m in chatMessages"
                         :id="m.id"
                         :key="m.id"
                         :avatar-url="m.avatarUrl"

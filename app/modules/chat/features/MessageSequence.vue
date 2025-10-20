@@ -2,10 +2,16 @@
 import { format } from 'date-fns'
 import type { IMessageSequenceProps } from '~/modules/chat/models/types'
 defineProps<IMessageSequenceProps>()
+
+const rootRef = useTemplateRef('root')
+
+defineExpose({
+    rootRef
+})
 </script>
 
 <template>
-    <div class="grid-message-container">
+    <div ref="root" class="grid-message-container">
         <div class="flex flex-row gap-2 grid-sender">
             <UPopover :open="false" mode="hover">
                 <template #anchor>
