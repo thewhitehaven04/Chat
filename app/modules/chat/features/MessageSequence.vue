@@ -3,10 +3,10 @@ import { format } from 'date-fns'
 import type { IMessageSequenceProps } from '~/modules/chat/models/types'
 defineProps<IMessageSequenceProps>()
 
-const rootRef = useTemplateRef('root')
+const containerRef = useTemplateRef('root')
 
 defineExpose({
-    rootRef
+    containerRef
 })
 </script>
 

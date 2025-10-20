@@ -12,7 +12,7 @@ const { pending, data } = useFetch(`/api/chat/${params.roomId}/history`, {
     },
     query: {
         limit: 30,
-        skip: skip.value
+        skip: skip
     }
 })
 
@@ -35,25 +35,37 @@ const handleLoadMore = () => {
 const showLoadingState = computed(() => pending.value)
 const showNoMessages = computed(() => messages.value.length === 0 && !pending.value)
 
-const scrollTargetRef = useTemplateRef('scrollTarget')
+const scrollTargetRef = useTemplateRef('bottomScrollTarget')
 const firstMessageRef = useTemplateRef('firstMessage')
+const chatRef = useTemplateRef('chat')
 
 const observer = new IntersectionObserver(
-    () => {
+    (_entries, observer) => {
         if (data.value.hasMore) {
             handleLoadMore()
+            const container = firstMessageRef.value?.containerRef
+            if (container) {
+                observer.unobserve(container)
+            }
         }
     },
     {
-        root: scrollTargetRef.value,
+        root: chatRef.value,
         threshold: 0
     }
 )
 
-onMounted(() => {
-    if (firstMessageRef.value?.rootRef) {
-        observer.observe(firstMessageRef.value.rootRef)
+onUpdated(() => {
+    if (messages.value.length > 0 && firstMessageRef.value?.containerRef) {
+        observer.observe(firstMessageRef.value?.containerRef)
     }
+})
+
+onMounted(() => {
+    scrollTargetRef.value?.scrollIntoView({
+        block: 'end',
+        behavior: 'smooth'
+    })
 })
 
 onUnmounted(() => {
@@ -85,10 +97,7 @@ const chatMessages = computed(() => messages.value.slice(1))
         <div ref="chat" class="flex-1 overflow-y-scroll">
             <USkeleton v-if="showLoadingState" class="h-12 w-12 rounded-full" />
             <ul v-else>
-                <li
-                    ref="scrollTarget"
-                    class="flex flex-col items-start justify-center flex-1 gap-8 w-full"
-                >
+                <li class="flex flex-col items-start justify-center flex-1 gap-8 w-full">
                     <ChatFeaturesMessageSequence
                         v-if="first"
                         :id="first.id"
@@ -106,6 +115,7 @@ const chatMessages = computed(() => messages.value.slice(1))
                         :messages="m.messages"
                     />
                 </li>
+                <span ref="bottomScrollTarget" />
             </ul>
         </div>
         <div class="flex flex-col items-center justify-center">

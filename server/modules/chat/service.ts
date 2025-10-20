@@ -81,7 +81,7 @@ class ChatService {
                     count: 'exact'
                 })
                 .order('submitted_at', {
-                    ascending: true
+                    ascending: false
                 })
                 .filter('chat_room', 'eq', params.chatRoom)
                 .limit(params.limit)
@@ -104,14 +104,16 @@ class ChatService {
                 name: chatData.data.name,
                 description: chatData.data.description
             },
-            messages: messages.data.map((message) => ({
-                ...message,
-                submitted_by: {
-                    id: message.profiles.id,
-                    name: message.profiles.name,
-                    avatarUrl: message.profiles.avatar_url
-                }
-            })),
+            messages: messages.data
+                .sort((a, b) => (new Date(a.submitted_at) > new Date(b.submitted_at) ? 1 : -1))
+                .map((message) => ({
+                    ...message,
+                    submitted_by: {
+                        id: message.profiles.id,
+                        name: message.profiles.name,
+                        avatarUrl: message.profiles.avatar_url
+                    }
+                })),
             hasMore
         }
     }
