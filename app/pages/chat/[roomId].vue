@@ -36,17 +36,13 @@ const showLoadingState = computed(() => pending.value)
 const showNoMessages = computed(() => messages.value.length === 0 && !pending.value)
 
 const scrollTargetRef = useTemplateRef('bottomScrollTarget')
-const firstMessageRef = useTemplateRef('firstMessage')
+const firstMessageRef = useTemplateRef('firstMessageThreshold')
 const chatRef = useTemplateRef('chat')
 
 const observer = new IntersectionObserver(
     (_entries, observer) => {
-        if (data.value.hasMore) {
+        if (data.value?.hasMore) {
             handleLoadMore()
-            const container = firstMessageRef.value?.containerRef
-            if (container) {
-                observer.unobserve(container)
-            }
         }
     },
     {
@@ -55,9 +51,9 @@ const observer = new IntersectionObserver(
     }
 )
 
-onUpdated(() => {
-    if (messages.value.length > 0 && firstMessageRef.value?.containerRef) {
-        observer.observe(firstMessageRef.value?.containerRef)
+watch([showLoadingState, firstMessageRef], () => {
+    if (!showLoadingState.value && firstMessageRef.value?.containerRef) {
+        observer.observe(firstMessageRef.value.containerRef)
     }
 })
 
@@ -101,7 +97,7 @@ const chatMessages = computed(() => messages.value.slice(1))
                     <ChatFeaturesMessageSequence
                         v-if="first"
                         :id="first.id"
-                        ref="firstMessage"
+                        ref="firstMessageThreshold"
                         :avatar-url="first.avatarUrl"
                         :submitted-by="first?.submittedBy"
                         :messages="first?.messages"

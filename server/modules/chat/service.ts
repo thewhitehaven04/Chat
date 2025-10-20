@@ -84,7 +84,7 @@ class ChatService {
                     ascending: false
                 })
                 .filter('chat_room', 'eq', params.chatRoom)
-                .limit(params.limit)
+                .range(params.skip, params.skip + params.limit)
                 .throwOnError(),
             this.client
                 .from('chat_rooms')
