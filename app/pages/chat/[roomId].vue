@@ -27,9 +27,11 @@ const { sendMessage, messages, isDisconnected, prependMessages } = useChat({
 })
 
 const scrollToBottom = () => {
-    if (chatRef.value) {
-        chatRef.value.scrollTop = chatRef.value.scrollHeight
-    }
+    requestAnimationFrame(() => {
+        if (chatRef.value) {
+            chatRef.value.scrollTop = chatRef.value.scrollHeight
+        }
+    })
 }
 
 const handleLoadMore = () => {
