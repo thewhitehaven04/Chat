@@ -48,7 +48,6 @@ function defineChatHandler() {
             )
 
             clientMap.set(peer.id, chat)
-            console.log('open peer id:', peer.id)
 
             chat.subscribe((_, newMessage) => {
                 peer.send(JSON.stringify(newMessage))
@@ -56,7 +55,6 @@ function defineChatHandler() {
         },
 
         async message(peer, message) {
-            console.log('message peer id:', peer.id)
             const messageDto = message.json<IMessageInputDto>()
             try {
                 await clientMap.get(peer.id)?.sendMessage(messageDto)

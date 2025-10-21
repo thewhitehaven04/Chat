@@ -84,8 +84,7 @@ class ChatService {
                     ascending: false
                 })
                 .filter('chat_room', 'eq', params.chatRoom)
-                .range(params.skip, params.skip + params.limit)
-                .throwOnError(),
+                .range(params.skip, params.skip + params.limit),
             this.client
                 .from('chat_rooms')
                 .select('*')
@@ -105,15 +104,19 @@ class ChatService {
                 description: chatData.data.description
             },
             messages: messages.data
-                .sort((a, b) => (new Date(a.submitted_at) > new Date(b.submitted_at) ? 1 : -1))
-                .map((message) => ({
-                    ...message,
-                    submitted_by: {
-                        id: message.profiles.id,
-                        name: message.profiles.name,
-                        avatarUrl: message.profiles.avatar_url
-                    }
-                })),
+                ? messages.data
+                      .sort((a, b) =>
+                          new Date(a.submitted_at) > new Date(b.submitted_at) ? 1 : -1
+                      )
+                      .map((message) => ({
+                          ...message,
+                          submitted_by: {
+                              id: message.profiles.id,
+                              name: message.profiles.name,
+                              avatarUrl: message.profiles.avatar_url
+                          }
+                      }))
+                : [],
             hasMore
         }
     }

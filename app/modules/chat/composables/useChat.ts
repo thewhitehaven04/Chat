@@ -4,7 +4,7 @@ import type { IChatMessage } from '~~/server/modules/chat/models/types'
 
 interface UseChatOptions {
     chatRoomId: string | string[]
-    onNewMessage?: (message: IChatMessage) => void
+    onNewMessage?: () => void
 }
 
 export function useChat(options: UseChatOptions) {
@@ -69,7 +69,7 @@ export function useChat(options: UseChatOptions) {
             messageSequence.pop()
         }
 
-        messages.value = [...messageSequence, ...messages.value]
+        messages.value.unshift(...messageSequence)
     }
 
     onMounted(() => {
@@ -83,10 +83,7 @@ export function useChat(options: UseChatOptions) {
             try {
                 const newMessage = JSON.parse(event.data) as IChatMessage
                 _pushMessage(messages.value, newMessage)
-
-                if (onNewMessage) {
-                    onNewMessage(newMessage)
-                }
+                onNewMessage?.()
             } catch (error) {
                 console.error('Failed to parse message:', error)
             }

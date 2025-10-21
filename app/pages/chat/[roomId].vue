@@ -5,76 +5,86 @@ import type { IChatMessage } from '~~/server/modules/chat/models/types'
 const params = useRoute().params
 
 const skip = ref(0)
+const isTextareaDisabled = ref(true)
 
-const { pending, data } = useFetch(`/api/chat/${params.roomId}/history`, {
-    onResponse: ({ response }) => {
-        prependMessages(response._data.messages as IChatMessage[])
+let observer: IntersectionObserver | null
+
+const { data, pending: isChatHistoryLoading } = useFetch(`/api/chat/${params.roomId}/history`, {
+    onResponse: ({ response, error }) => {
+        if (!error) {
+            prependMessages(response._data.messages as IChatMessage[])
+        }
     },
     query: {
-        limit: 30,
+        limit: 40,
         skip: skip
     }
 })
 
-const isTextareaDisabled = ref(true)
-
 const { sendMessage, messages, isDisconnected, prependMessages } = useChat({
-    onNewMessage: () => {
-        scrollTargetRef.value?.scrollIntoView({
-            block: 'end',
-            behavior: 'smooth'
-        })
-    },
+    onNewMessage: () => scrollToBottom(),
     chatRoomId: params.roomId as string
 })
 
-const handleLoadMore = () => {
-    skip.value += 30
+const scrollToBottom = () => {
+    if (chatRef.value) {
+        chatRef.value.scrollTop = chatRef.value.scrollHeight
+    }
 }
 
-const showLoadingState = computed(() => pending.value)
-const showNoMessages = computed(() => messages.value.length === 0 && !pending.value)
+const handleLoadMore = () => {
+    if (!isChatHistoryLoading.value) {
+        setTimeout(() => {
+            skip.value += 40
+        }, 1000)
+    }
 
-const scrollTargetRef = useTemplateRef('bottomScrollTarget')
+    if (observer && firstMessageRef.value) {
+        observer.unobserve(firstMessageRef.value)
+    }
+}
+
+const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
+
 const firstMessageRef = useTemplateRef('firstMessageThreshold')
 const chatRef = useTemplateRef('chat')
 
-const observer = new IntersectionObserver(
-    (_entries, observer) => {
-        if (data.value?.hasMore) {
-            handleLoadMore()
+watch(
+    [isChatHistoryLoading, firstMessageRef],
+    () => {
+        if (firstMessageRef.value && observer) {
+            observer.observe(firstMessageRef.value)
         }
     },
     {
-        root: chatRef.value,
-        threshold: 0
+        flush: 'post'
     }
 )
 
-watch([showLoadingState, firstMessageRef], () => {
-    if (!showLoadingState.value && firstMessageRef.value?.containerRef) {
-        observer.observe(firstMessageRef.value.containerRef)
-    }
-})
-
 onMounted(() => {
-    scrollTargetRef.value?.scrollIntoView({
-        block: 'end',
-        behavior: 'smooth'
-    })
+    observer = new IntersectionObserver(
+        (_entries) => {
+            if (data.value?.hasMore) {
+                handleLoadMore()
+            }
+        },
+        {
+            root: chatRef.value,
+            threshold: 0.9
+        }
+    )
 })
 
 onUnmounted(() => {
-    observer.disconnect()
+    if (observer) {
+        observer.disconnect()
+    }
 })
 
 const router = useRouter()
 const onClose = () => {
     router.push('/')
 }
-
-const first = computed(() => messages.value[0])
-const chatMessages = computed(() => messages.value.slice(1))
 </script>
 
 <template>
@@ -82,7 +92,9 @@ const chatMessages = computed(() => messages.value.slice(1))
         <UHeader>
             <template #left>
                 <div class="flex flex-col gap-2 mb-4">
-                    <h1 v-if="!pending" class="text-xl font-bold">{{ data?.chat.name }}</h1>
+                    <h1 v-if="!isChatHistoryLoading" class="text-xl font-bold">
+                        {{ data?.chat.name }}
+                    </h1>
                     <p class="text-neutral-700">{{ data?.chat.description }}</p>
                 </div>
             </template>
@@ -91,19 +103,12 @@ const chatMessages = computed(() => messages.value.slice(1))
             </template>
         </UHeader>
         <div ref="chat" class="flex-1 overflow-y-scroll">
-            <USkeleton v-if="showLoadingState" class="h-12 w-12 rounded-full" />
+            <USkeleton v-if="isChatHistoryLoading" class="h-12 w-12 rounded-full" />
             <ul v-else>
+                <span ref="firstMessageThreshold" />
                 <li class="flex flex-col items-start justify-center flex-1 gap-8 w-full">
                     <ChatFeaturesMessageSequence
-                        v-if="first"
-                        :id="first.id"
-                        ref="firstMessageThreshold"
-                        :avatar-url="first.avatarUrl"
-                        :submitted-by="first?.submittedBy"
-                        :messages="first?.messages"
-                    />
-                    <ChatFeaturesMessageSequence
-                        v-for="m in chatMessages"
+                        v-for="m in messages"
                         :id="m.id"
                         :key="m.id"
                         :avatar-url="m.avatarUrl"
@@ -111,7 +116,6 @@ const chatMessages = computed(() => messages.value.slice(1))
                         :messages="m.messages"
                     />
                 </li>
-                <span ref="bottomScrollTarget" />
             </ul>
         </div>
         <div class="flex flex-col items-center justify-center">
