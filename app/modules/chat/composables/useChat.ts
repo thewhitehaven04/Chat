@@ -36,7 +36,7 @@ export function useChat(options: UseChatOptions) {
             messages.value = oldMessages
         } else {
             const lastGroup = oldMessages.at(-1)
-            if (lastGroup && lastGroup?.submitted_by === messages.value[0]?.submitted_by) {
+            if (lastGroup && lastGroup?.submitted_by.id === messages.value[0]?.submitted_by.id) {
                 messages.value[0]?.messages.unshift(...lastGroup.messages)
             }
             messages.value.unshift(...oldMessages.slice(0, -1))
@@ -55,7 +55,7 @@ export function useChat(options: UseChatOptions) {
             try {
                 const message = JSON.parse(event.data) as IIncomingMessagePayload
                 const currentSequence = messages.value.at(-1)
-                if (message.submitted_by === currentSequence?.submitted_by) {
+                if (message.submitted_by.id === currentSequence?.submitted_by.id) {
                     currentSequence.messages.push({
                         id: message.id,
                         text: message.text,

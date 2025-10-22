@@ -102,6 +102,9 @@ class ChatService {
         const groups: IChatMessageGroup[] = []
 
         if (messages.data) {
+            messages.data = messages.data.sort((a, b) => {
+                return new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime()
+            })
             let lastGroup: IChatMessageGroup | null = null
             for (const message of messages.data) {
                 if (lastGroup !== null) {
@@ -112,7 +115,7 @@ class ChatService {
                             submitted_at: message.submitted_at
                         })
                     } else {
-                        groups.push({
+                        lastGroup = {
                             chat_room: message.chat_room,
                             id: message.id,
                             messages: [
@@ -127,11 +130,11 @@ class ChatService {
                                 name: message.profiles.name,
                                 avatarUrl: message.profiles.avatar_url
                             }
-                        })
-                        lastGroup = groups.at(-1) ?? null
+                        }
+                        groups.push(lastGroup)
                     }
                 } else {
-                    groups.push({
+                    lastGroup = {
                         chat_room: message.chat_room,
                         id: message.id,
                         messages: [
@@ -146,8 +149,8 @@ class ChatService {
                             name: message.profiles.name,
                             avatarUrl: message.profiles.avatar_url
                         }
-                    })
-                    lastGroup = groups.at(-1) ?? null
+                    }
+                    groups.push(lastGroup)
                 }
             }
         }

@@ -32,9 +32,16 @@ defineExpose({
                 </template>
             </UPopover>
         </div>
-        <ul class="grid-text">
-            <li v-for="m in $props.messages" :key="m.id">
-                {{ m.text }}
+        <ul class="grid-text w-full overflow-x-visible">
+            <li
+                v-for="m in $props.messages"
+                :key="m.id"
+                class="hover:bg-neutral-50 relative after:text-xs flex flex-row justify-between items-center"
+                :data-content="format(m.submitted_at, 'dd/MM HH:mm')"
+            >
+                <p>
+                    {{ m.text }}
+                </p>
             </li>
         </ul>
         <UAvatar size="xl" class="grid-avatar" :src="$props.submitted_by.avatarUrl ?? undefined" />
@@ -49,6 +56,14 @@ defineExpose({
     column-gap: 8px;
     width: 100%;
     align-items: start;
+}
+
+li:hover::after {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    content: attr(data-content);
+    width: 120px;
 }
 
 .grid-avatar {
