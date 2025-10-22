@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useChat } from '~/modules/chat/composables/useChat'
+import { useChatHistory } from '~/modules/chat/composables/useChatHistory'
+import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 import type { IChatMessageGroup } from '~~/server/modules/chat/models/types'
 
 const params = useRoute().params
@@ -23,7 +24,7 @@ const { data, pending } = useFetch(`/api/chat/${params.roomId}/history`, {
 const isChatHistoryLoading = computed(() => pending.value && !data.value)
 const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 
-const { sendMessage, messages, isDisconnected, prependMessages } = useChat({
+const { sendMessage, messages, isDisconnected, prependMessages } = useChatHistory({
     onNewMessage: () => scrollToBottom(),
     onPrepend: () => {
         const scrollHeight = chatRef.value?.scrollHeight || 0
@@ -46,17 +47,15 @@ const scrollToBottom = () => {
     })
 }
 
-const handleLoadMore = () => {
+const handleLoadMore = useThrottledFn(() => {
     if (!isChatHistoryLoading.value) {
-        setTimeout(() => {
-            skip.value += 30
-        }, 1000)
+        skip.value += 30
     }
 
     if (observer && firstMessageRef.value) {
         observer.unobserve(firstMessageRef.value)
     }
-}
+}, 1000)
 
 const firstMessageRef = useTemplateRef('firstMessageThreshold')
 const chatRef = useTemplateRef('chat')
@@ -75,7 +74,7 @@ watch(
 
 onMounted(() => {
     observer = new IntersectionObserver(
-        (entries, observer) => {
+        (entries) => {
             if (data.value?.hasMore && entries[0] && entries[0].intersectionRatio > 0.3) {
                 handleLoadMore()
             }

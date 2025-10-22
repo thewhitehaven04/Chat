@@ -10,7 +10,7 @@ interface UseChatOptions {
     onPrepend?: () => void
 }
 
-export function useChat(options: UseChatOptions) {
+export function useChatHistory(options: UseChatOptions) {
     const { chatRoomId, onNewMessage, onPrepend } = options
 
     const messages = ref<IChatMessageGroup[]>([])
