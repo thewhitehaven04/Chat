@@ -25,11 +25,7 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
             <span>Multichat</span>
         </template>
         <template #default>
-            <UNavigationMenu
-                orientation="vertical"
-                variant="pill"
-                :items="items[0]"
-            >
+            <UNavigationMenu orientation="vertical" variant="pill" :items="items[0]">
                 <template #list-leading>
                     <AppFeaturesComponentsChatRoomCreateButton />
                 </template>
@@ -39,9 +35,9 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
             <div class="flex flex-col gap-2 w-full">
                 <div class="flex flex-row gap-4 items-center">
                     <UAvatar size="md" :src="profile?.avatarUrl ?? undefined" />
-                    <div class="overflow-ellipsis w-full">
+                    <ULink href="/profile" class="overflow-ellipsis w-full">
                         {{ profile?.name }}
-                    </div>
+                    </ULink>
                 </div>
                 <AppFeaturesComponentsLogoutButton />
             </div>

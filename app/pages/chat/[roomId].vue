@@ -110,7 +110,7 @@ const onClose = () => {
                 </div>
             </template>
             <template #right>
-                <UButton variant="ghost" icon="i-lucide-x" @click="onClose()" />
+                <ULink as="button" href="/" icon="i-lucide-x" />
             </template>
         </UHeader>
         <div ref="chat" class="flex-1 overflow-y-scroll">

@@ -1,5 +1,5 @@
 import type { IChatDto } from '~~/server/modules/chats/models/types'
-import type { IProfile } from '~~/server/modules/profile/models/types'
+import type { IProfileReadDto } from '~~/server/modules/profile/models/types'
 
 export interface IMessageInputDto {
     chatRoom: number
@@ -21,7 +21,7 @@ export interface IMessage {
 export interface IChatMessageGroup {
     id: string
     messages: IMessage[]
-    submitted_by: IProfile
+    submitted_by: IProfileReadDto
     chat_room: number
 }
 
@@ -30,7 +30,7 @@ export interface IIncomingMessagePayload {
     id: string;
     modified_at: string | null;
     submitted_at: string;
-    submitted_by: IProfile;
+    submitted_by: IProfileReadDto;
     text: string;
 }
 
