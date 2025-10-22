@@ -12,16 +12,30 @@ export interface IGetChatHistoryRequestDto {
     skip: number
 }
 
-export interface IChatMessage {
-    id: string 
+export interface IMessage {
+    id: string
     text: string
     submitted_at: string
-    submitted_by: IProfile 
+}
+
+export interface IChatMessageGroup {
+    id: string
+    messages: IMessage[]
+    submitted_by: IProfile
     chat_room: number
 }
 
+export interface IIncomingMessagePayload {
+    chat_room: number;
+    id: string;
+    modified_at: string | null;
+    submitted_at: string;
+    submitted_by: IProfile;
+    text: string;
+}
+
 export interface IChatHistoryResponse {
-    chat: IChatDto 
-    messages: IChatMessage[]
+    chat: IChatDto
+    messageGroups: IChatMessageGroup[]
     hasMore: boolean
 }

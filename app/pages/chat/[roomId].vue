@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useChat } from '~/modules/chat/composables/useChat'
-import type { IChatMessage } from '~~/server/modules/chat/models/types'
+import type { IChatMessageGroup } from '~~/server/modules/chat/models/types'
 
 const params = useRoute().params
 
@@ -9,10 +9,10 @@ const isTextareaDisabled = ref(true)
 
 let observer: IntersectionObserver | null
 
-const { data, pending: isChatHistoryLoading } = useFetch(`/api/chat/${params.roomId}/history`, {
+const { data, pending } = useFetch(`/api/chat/${params.roomId}/history`, {
     onResponse: ({ response, error }) => {
         if (!error) {
-            prependMessages(response._data.messages as IChatMessage[])
+            prependMessages(response._data.messageGroups as IChatMessageGroup[])
         }
     },
     query: {
@@ -20,6 +20,8 @@ const { data, pending: isChatHistoryLoading } = useFetch(`/api/chat/${params.roo
         skip: skip
     }
 })
+
+const isChatHistoryLoading = computed(() => pending.value && !data.value)
 
 const { sendMessage, messages, isDisconnected, prependMessages } = useChat({
     onNewMessage: () => scrollToBottom(),
@@ -75,7 +77,9 @@ watch(
 
 onMounted(() => {
     observer = new IntersectionObserver(
-        (_entries) => {
+        (_entries, observer) => {
+            console.log('entries: ', _entries)
+            console.log('observer: ', observer)
             if (data.value?.hasMore) {
                 handleLoadMore()
             }
@@ -123,8 +127,8 @@ const onClose = () => {
                         v-for="m in messages"
                         :id="m.id"
                         :key="m.id"
-                        :avatar-url="m.avatarUrl"
-                        :submitted-by="m.submittedBy"
+                        :chat_room="m.chat_room"
+                        :submitted_by="m.submitted_by"
                         :messages="m.messages"
                     />
                 </li>

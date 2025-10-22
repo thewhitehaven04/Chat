@@ -1,6 +1,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
-import type { IMessageSequenceProps } from '~/modules/chat/models/types'
-import type { IChatMessage } from '~~/server/modules/chat/models/types'
+import type {
+    IChatMessageGroup,
+    IIncomingMessagePayload
+} from '~~/server/modules/chat/models/types'
 
 interface UseChatOptions {
     chatRoomId: string | string[]
@@ -11,7 +13,7 @@ interface UseChatOptions {
 export function useChat(options: UseChatOptions) {
     const { chatRoomId, onNewMessage, onPrepend } = options
 
-    const messages = ref<IMessageSequenceProps[]>([])
+    const messages = ref<IChatMessageGroup[]>([])
     const isDisconnected = ref(false)
     let connection: WebSocket | null = null
 
@@ -29,48 +31,16 @@ export function useChat(options: UseChatOptions) {
         }
     }
 
-    const _pushMessage = (sequence: IMessageSequenceProps[], newMessage: IChatMessage) => {
-        const currentSequence = sequence.at(-1)
-        if (newMessage.submitted_by.id === currentSequence?.submittedBy.id) {
-            currentSequence.messages.push({
-                text: newMessage.text,
-                submittedAt: newMessage.submitted_at
-            })
+    const prependMessages = (oldMessages: IChatMessageGroup[]) => {
+        if (messages.value.length === 0) {
+            messages.value = oldMessages
         } else {
-            sequence.push({
-                avatarUrl: newMessage.submitted_by.avatarUrl,
-                id: newMessage.id,
-                messages: [
-                    {
-                        submittedAt: newMessage.submitted_at,
-                        text: newMessage.text
-                    }
-                ],
-                submittedBy: {
-                    id: newMessage.submitted_by.id,
-                    name: newMessage.submitted_by.name
-                }
-            })
-        }
-    }
-
-    const prependMessages = (oldMessages: IChatMessage[]) => {
-        const messageSequence: IMessageSequenceProps[] = []
-        for (let i = 0; i < oldMessages.length; i++) {
-            const message = oldMessages[i]
-            if (message) {
-                _pushMessage(messageSequence, message)
+            const lastGroup = oldMessages.at(-1)
+            if (lastGroup && lastGroup?.submitted_by === messages.value[0]?.submitted_by) {
+                messages.value[0]?.messages.unshift(...lastGroup.messages)
             }
+            messages.value.unshift(...oldMessages.slice(0, -1))
         }
-
-        const lastSequence = messageSequence.at(-1)
-
-        if (lastSequence && lastSequence?.submittedBy.id === messages.value.at(0)?.submittedBy.id) {
-            messages.value[0]?.messages.unshift(...lastSequence.messages)
-            messageSequence.pop()
-        }
-
-        messages.value.unshift(...messageSequence)
         onPrepend?.()
     }
 
@@ -83,8 +53,33 @@ export function useChat(options: UseChatOptions) {
 
         connection.addEventListener('message', (event: MessageEvent) => {
             try {
-                const newMessage = JSON.parse(event.data) as IChatMessage
-                _pushMessage(messages.value, newMessage)
+                const message = JSON.parse(event.data) as IIncomingMessagePayload
+                const currentSequence = messages.value.at(-1)
+                if (message.submitted_by === currentSequence?.submitted_by) {
+                    currentSequence.messages.push({
+                        id: message.id,
+                        text: message.text,
+                        submitted_at: message.submitted_at
+                    })
+                } else {
+                    messages.value.push({
+                        chat_room: message.chat_room,
+                        id: message.id,
+                        messages: [
+                            {
+                                id: message.id,
+                                submitted_at: message.submitted_at,
+                                text: message.text
+                            }
+                        ],
+                        submitted_by: {
+                            id: message.submitted_by.id,
+                            name: message.submitted_by.name,
+                            avatarUrl: message.submitted_by.avatarUrl
+                        }
+                    })
+                }
+
                 onNewMessage?.()
             } catch (error) {
                 console.error('Failed to parse message:', error)

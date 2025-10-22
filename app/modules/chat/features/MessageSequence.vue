@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
-import type { IMessageSequenceProps } from '~/modules/chat/models/types'
-defineProps<IMessageSequenceProps>()
+import type { IChatMessageGroup } from '~~/server/modules/chat/models/types'
+defineProps<IChatMessageGroup>()
 
 const containerRef = useTemplateRef('root')
 
@@ -15,17 +15,17 @@ defineExpose({
         <div class="flex flex-row gap-2 grid-sender">
             <UPopover :open="false" mode="hover">
                 <template #anchor>
-                    <span class="text-primary-500">{{ $props.submittedBy.name }}</span>
+                    <span class="text-primary-500">{{ $props.submitted_by.name }}</span>
                 </template>
 
                 <template #default>
                     <div class="flex flex-row items-start gap-2">
                         <div class="flex flex-row gap-2 items-baseline">
                             <div class="hover:underline text-primary-700 font-medium">
-                                {{ $props.submittedBy.name }}
+                                {{ $props.submitted_by.name }}
                             </div>
                             <div class="text-neutral-500 text-xs">
-                                {{ format($props.messages[0]!.submittedAt, 'MMM dd HH:mm:ss') }}
+                                {{ format($props.messages[0]!.submitted_at, 'MMM dd HH:mm:ss') }}
                             </div>
                         </div>
                     </div>
@@ -33,11 +33,11 @@ defineExpose({
             </UPopover>
         </div>
         <ul class="grid-text">
-            <li v-for="m in $props.messages" :key="m.text">
+            <li v-for="m in $props.messages" :key="m.id">
                 {{ m.text }}
             </li>
         </ul>
-        <UAvatar size="xl" class="grid-avatar" :src="$props.avatarUrl ?? undefined" />
+        <UAvatar size="xl" class="grid-avatar" :src="$props.submitted_by.avatarUrl ?? undefined" />
     </div>
 </template>
 

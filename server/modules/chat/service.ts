@@ -7,7 +7,9 @@ import type { AuthService } from '../auth/service'
 import type { Database } from '~~/server/supabase'
 import type {
     IChatHistoryResponse,
+    IChatMessageGroup,
     IGetChatHistoryRequestDto,
+    IIncomingMessagePayload,
     IMessageInputDto
 } from '~~/server/modules/chat/models/types'
 import type { ProfileService } from '~~/server/modules/profile/service'
@@ -30,10 +32,7 @@ class ChatService {
     }
 
     subscribe(
-        messageCallbackFn: (
-            oldMessage: Record<string, unknown>,
-            newMessage: Record<string, unknown>
-        ) => void
+        messageCallbackFn: (oldMessage: unknown, newMessage: IIncomingMessagePayload) => void
     ) {
         this.subscriptionChannel = this.client
             .channel('chat_messages_realtime')
@@ -49,7 +48,10 @@ class ChatService {
                         payload.new.submitted_by
                     )
                     messageCallbackFn(
-                        { ...payload.old, submitted_by: profile },
+                        {
+                            ...payload.old,
+                            submitted_by: profile
+                        },
                         { ...payload.new, submitted_by: profile }
                     )
                 }
@@ -97,26 +99,66 @@ class ChatService {
             hasMore = messages.count > messages.data.length
         }
 
+        const groups: IChatMessageGroup[] = []
+
+        if (messages.data) {
+            let lastGroup: IChatMessageGroup | null = null
+            for (const message of messages.data) {
+                if (lastGroup !== null) {
+                    if (message.submitted_by === lastGroup.submitted_by.id) {
+                        lastGroup.messages.push({
+                            id: message.id,
+                            text: message.text,
+                            submitted_at: message.submitted_at
+                        })
+                    } else {
+                        groups.push({
+                            chat_room: message.chat_room,
+                            id: message.id,
+                            messages: [
+                                {
+                                    id: message.id,
+                                    text: message.text,
+                                    submitted_at: message.submitted_at
+                                }
+                            ],
+                            submitted_by: {
+                                id: message.submitted_by,
+                                name: message.profiles.name,
+                                avatarUrl: message.profiles.avatar_url
+                            }
+                        })
+                        lastGroup = groups.at(-1) ?? null
+                    }
+                } else {
+                    groups.push({
+                        chat_room: message.chat_room,
+                        id: message.id,
+                        messages: [
+                            {
+                                id: message.id,
+                                text: message.text,
+                                submitted_at: message.submitted_at
+                            }
+                        ],
+                        submitted_by: {
+                            id: message.submitted_by,
+                            name: message.profiles.name,
+                            avatarUrl: message.profiles.avatar_url
+                        }
+                    })
+                    lastGroup = groups.at(-1) ?? null
+                }
+            }
+        }
+
         return {
             chat: {
                 id: chatData.data.id,
                 name: chatData.data.name,
                 description: chatData.data.description
             },
-            messages: messages.data
-                ? messages.data
-                      .sort((a, b) =>
-                          new Date(a.submitted_at) > new Date(b.submitted_at) ? 1 : -1
-                      )
-                      .map((message) => ({
-                          ...message,
-                          submitted_by: {
-                              id: message.profiles.id,
-                              name: message.profiles.name,
-                              avatarUrl: message.profiles.avatar_url
-                          }
-                      }))
-                : [],
+            messageGroups: groups,
             hasMore
         }
     }
