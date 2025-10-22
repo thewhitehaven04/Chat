@@ -23,6 +23,16 @@ const { data, pending: isChatHistoryLoading } = useFetch(`/api/chat/${params.roo
 
 const { sendMessage, messages, isDisconnected, prependMessages } = useChat({
     onNewMessage: () => scrollToBottom(),
+    onPrepend: () => {
+        const scrollHeight = chatRef.value?.scrollHeight || 0
+
+        requestAnimationFrame(() => {
+            if (chatRef.value) {
+                chatRef.value.scrollTop =
+                    chatRef.value.scrollHeight - scrollHeight + chatRef.value.scrollTop
+            }
+        })
+    },
     chatRoomId: params.roomId as string
 })
 

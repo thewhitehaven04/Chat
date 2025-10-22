@@ -5,10 +5,11 @@ import type { IChatMessage } from '~~/server/modules/chat/models/types'
 interface UseChatOptions {
     chatRoomId: string | string[]
     onNewMessage?: () => void
+    onPrepend?: () => void
 }
 
 export function useChat(options: UseChatOptions) {
-    const { chatRoomId, onNewMessage } = options
+    const { chatRoomId, onNewMessage, onPrepend } = options
 
     const messages = ref<IMessageSequenceProps[]>([])
     const isDisconnected = ref(false)
@@ -70,6 +71,7 @@ export function useChat(options: UseChatOptions) {
         }
 
         messages.value.unshift(...messageSequence)
+        onPrepend?.()
     }
 
     onMounted(() => {
