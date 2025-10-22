@@ -5,7 +5,6 @@ import type { IChatMessageGroup } from '~~/server/modules/chat/models/types'
 const params = useRoute().params
 
 const skip = ref(0)
-const isTextareaDisabled = ref(true)
 
 let observer: IntersectionObserver | null
 
@@ -16,12 +15,13 @@ const { data, pending } = useFetch(`/api/chat/${params.roomId}/history`, {
         }
     },
     query: {
-        limit: 40,
+        limit: 30,
         skip: skip
     }
 })
 
 const isChatHistoryLoading = computed(() => pending.value && !data.value)
+const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 
 const { sendMessage, messages, isDisconnected, prependMessages } = useChat({
     onNewMessage: () => scrollToBottom(),
@@ -49,7 +49,7 @@ const scrollToBottom = () => {
 const handleLoadMore = () => {
     if (!isChatHistoryLoading.value) {
         setTimeout(() => {
-            skip.value += 40
+            skip.value += 30
         }, 1000)
     }
 
@@ -57,8 +57,6 @@ const handleLoadMore = () => {
         observer.unobserve(firstMessageRef.value)
     }
 }
-
-const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 
 const firstMessageRef = useTemplateRef('firstMessageThreshold')
 const chatRef = useTemplateRef('chat')
@@ -77,16 +75,14 @@ watch(
 
 onMounted(() => {
     observer = new IntersectionObserver(
-        (_entries, observer) => {
-            console.log('entries: ', _entries)
-            console.log('observer: ', observer)
-            if (data.value?.hasMore) {
+        (entries, observer) => {
+            if (data.value?.hasMore && entries[0] && entries[0].intersectionRatio > 0.3) {
                 handleLoadMore()
             }
         },
         {
             root: chatRef.value,
-            threshold: 0.9
+            threshold: 0.3
         }
     )
 })
@@ -141,7 +137,7 @@ const onClose = () => {
             You've been disconnected
         </div>
         <ChatFeaturesMessageSubmissionForm
-            :is-disabled="isTextareaDisabled"
+            :is-disabled="isChatHistoryLoading"
             @message-submitted="sendMessage($event)"
         />
     </UContainer>
