@@ -1,7 +1,25 @@
 <script setup lang="ts">
+import z from 'zod'
 import { useChatHistory } from '~/modules/chat/composables/useChatHistory'
 import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 import type { IChatMessageGroup } from '~~/server/modules/chat/models/types'
+
+definePageMeta({
+    validate(route) {
+        const roomId = route.params.roomId
+        console.log(roomId)
+        const parse = z
+            .string()
+            .regex(/\d+/, {
+                error: 'Invalid room id'
+            })
+            .safeParse(roomId)
+        if (parse.success) {
+            return true
+        }
+        return { statusCode: 403, statusMessage: parse.error.message }
+    }
+})
 
 const params = useRoute().params
 

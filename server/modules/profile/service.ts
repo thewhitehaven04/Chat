@@ -30,22 +30,23 @@ export class ProfileService {
         let avatarUrl: string | null = null
         if (profile.avatar) {
             const { data, error } = await this.supabaseClient.storage
-                .from('')
-                .upload(`${userId}.${profile.avatar.name.split('.').pop()}`, profile.avatar)
+                .from('avatars')
+                .upload(`public/${userId}`, profile.avatar, {
+                    upsert: true,
+                    cacheControl: '0'
+                })
 
             if (!error) {
-                avatarUrl = data.fullPath
+                avatarUrl = this.supabaseClient.storage.from('avatars').getPublicUrl(data.path)
+                    .data.publicUrl
             }
-            throw new Error('Unable to upload the profile picture')
         }
 
         return (
             await this.supabaseClient
                 .from('profiles')
-                .update({ ...profile, avatar_url: avatarUrl })
+                .update({ name: profile.name, avatar_url: avatarUrl ?? undefined })
                 .eq('id', userId)
-                .select('*')
-                .single()
                 .throwOnError()
         ).data
     }

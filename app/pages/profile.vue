@@ -23,12 +23,25 @@ const formState = reactive<TProfileUpdateDto>({
     avatar: undefined
 })
 
-const handleSubmit = async (data: FormSubmitEvent<TProfileUpdateDto>) => {
+const handleSubmit = async ({ data }: FormSubmitEvent<TProfileUpdateDto>) => {
+    const formData = new FormData()
+    if (data.name) {
+        formData.append('name', data.name)
+    }
+    if (data.avatar) {
+        formData.append('avatar', data.avatar)
+    }
+
     await $fetch('/api/profile', {
         method: 'PUT',
-        body: data
+        body: formData,
+        onResponse: ({ error }) => {
+            if (!error) {
+                toggleEdit()
+                refreshNuxtData('/api/profile')
+            }
+        }
     })
-    toggleEdit()
 }
 
 const getAvatarUrl = (file: File) => {
@@ -49,7 +62,7 @@ const getAvatarUrl = (file: File) => {
                             color="error"
                             @click="toggleEdit()"
                         />
-                        <UButton label="Submit" variant="ghost" type="submit" />
+                        <UButton form="profile" label="Submit" variant="ghost" type="submit" />
                     </div>
                     <UButton v-else icon="i-lucide-pencil" variant="ghost" @click="toggleEdit()" />
                 </div>
@@ -71,16 +84,17 @@ const getAvatarUrl = (file: File) => {
                             v-model="formState.avatar"
                             label="Drop your image here"
                             description="WEBP, JPG"
-                            class="w-96 min-h-48"
+                            class="flex flex-col items-start gap-4"
+                            accept="image/jpg, image/webp"
                         >
-                            <image
-                                class="w-32 h-32"
+                            <img
+                                class="w-48 h-48 rounded-2xl border-[1px] border-[#0001]"
                                 :src="
                                     formState.avatar
                                         ? getAvatarUrl(formState.avatar)
                                         : (profile?.avatarUrl ?? undefined)
                                 "
-                            />
+                            >
                             <div v-if="isEditing" class="flex flex-row gap-4">
                                 <UButton variant="soft" @click="open()">Upload</UButton>
                                 <UButton variant="soft" @click="removeFile()">Remove</UButton>

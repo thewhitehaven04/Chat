@@ -31,11 +31,20 @@ const handleChatCreate = async (data: IChatCreateDto) => {
 const handleChatCreateOpen = () => {
     isOpen.value = true
 }
+const handleClose = () => {
+    isOpen.value = false
+}
 </script>
 
 <template>
     <UButton variant="soft" @click="handleChatCreateOpen()">Create chat room</UButton>
-    <UModal :open="isOpen" title="Create chat room">
+    <UModal
+        :open="isOpen"
+        title="Create chat room"
+        :close="{
+            onClick: handleClose
+        }"
+    >
         <template #body>
             <UForm
                 id="chatRoomCreate"
