@@ -1,11 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { IChatCreateDto } from '~~/server/modules/chats/models/types'
 import type { Database } from '~~/server/supabase'
+import type { IChatRoomsService } from './types'
 
-class ChatRoomsService {
-    client: SupabaseClient<Database>
+class ChatRoomsService<ClientType extends SupabaseClient<Database>> implements IChatRoomsService<ClientType> {
+    client: ClientType
 
-    constructor(client: SupabaseClient<Database>) {
+    constructor(client: ClientType) {
         this.client = client
     }
 

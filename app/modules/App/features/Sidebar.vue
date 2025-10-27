@@ -28,6 +28,7 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
             <UNavigationMenu orientation="vertical" variant="pill" :items="items[0]">
                 <template #list-leading>
                     <AppFeaturesComponentsChatRoomCreateButton />
+                    <ULink as="button" href="/">AI chat</ULink>
                 </template>
             </UNavigationMenu>
         </template>

@@ -4,11 +4,12 @@ import type {
     ISignUpInputDto,
     IUserDto
 } from '~~/shared/modules/auth/models/types'
+import type { IAuthService } from './types'
 
-class AuthService {
-    client: SupabaseClient
+class AuthService<ClientType extends SupabaseClient> implements IAuthService<ClientType> {
+    client: ClientType
 
-    constructor(client: SupabaseClient) {
+    constructor(client: ClientType) {
         this.client = client
     }
 

@@ -3,13 +3,17 @@ import type { AuthService } from '~~/server/modules/auth/service'
 import type { IProfileReadDto } from '~~/server/modules/profile/models/types'
 import type { Database } from '~~/server/supabase'
 import type { TProfileUpdateDto } from '~~/shared/modules/profile/models/validation'
+import type { IProfileService } from './types'
 
-export class ProfileService {
-    supabaseClient: SupabaseClient<Database>
-    authService: AuthService
+export class ProfileService<
+    ClientType extends SupabaseClient<Database>,
+    AuthServiceType extends AuthService<ClientType>
+> implements IProfileService<ClientType, AuthServiceType> {
+    client: ClientType
+    authService: AuthServiceType
 
-    constructor(client: SupabaseClient<Database>, authService: AuthService) {
-        this.supabaseClient = client
+    constructor(client: ClientType, authService: AuthServiceType) {
+        this.client = client
         this.authService = authService
     }
 
@@ -29,7 +33,7 @@ export class ProfileService {
         }
         let avatarUrl: string | null = null
         if (profile.avatar) {
-            const { data, error } = await this.supabaseClient.storage
+            const { data, error } = await this.client.storage
                 .from('avatars')
                 .upload(`public/${userId}`, profile.avatar, {
                     upsert: true,
@@ -37,13 +41,13 @@ export class ProfileService {
                 })
 
             if (!error) {
-                avatarUrl = this.supabaseClient.storage.from('avatars').getPublicUrl(data.path)
+                avatarUrl = this.client.storage.from('avatars').getPublicUrl(data.path)
                     .data.publicUrl
             }
         }
 
         return (
-            await this.supabaseClient
+            await this.client
                 .from('profiles')
                 .update({ name: profile.name, avatar_url: avatarUrl ?? undefined })
                 .eq('id', userId)
@@ -52,7 +56,7 @@ export class ProfileService {
     }
 
     async getProfileData(profileId: string): Promise<IProfileReadDto> {
-        const profiles = await this.supabaseClient
+        const profiles = await this.client
             .from('profiles')
             .select('id, name, avatar_url')
             .filter('id', 'eq', profileId)

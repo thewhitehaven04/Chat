@@ -13,17 +13,23 @@ import type {
     IMessageInputDto
 } from '~~/server/modules/chat/models/types'
 import type { ProfileService } from '~~/server/modules/profile/service'
+import type { IChatService } from './types'
 
-class ChatService {
-    client: SupabaseClient<Database>
-    authSerivce: AuthService
-    profileSerivce: ProfileService
+class ChatService<
+    TClient extends SupabaseClient<Database>,
+    AuthServiceType extends AuthService<TClient>,
+    ProfileServiceType extends ProfileService<TClient, AuthServiceType>
+> implements IChatService<TClient, AuthServiceType, ProfileServiceType>
+{
+    client: TClient
+    authSerivce: AuthServiceType
+    profileSerivce: ProfileServiceType
     subscriptionChannel: RealtimeChannel | null
 
     constructor(
-        client: SupabaseClient<Database>,
-        authService: AuthService,
-        profileService: ProfileService
+        client: TClient,
+        authService: AuthServiceType,
+        profileService: ProfileServiceType
     ) {
         this.client = client
         this.authSerivce = authService
