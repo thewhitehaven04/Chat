@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
 import z from 'zod'
+import markdownIt from 'markdown-it'
 
 const bottomMessage = ref('')
+const md = markdownIt()
+
+const computedMessage = computed(() => md.render(bottomMessage.value))
+
+const isAnswerPending = ref(false)
 
 const schema = z.object({
     message: z.string()
@@ -17,25 +23,35 @@ const formState = reactive({
 const form = useTemplateRef('ai-chat-form')
 
 const handleSubmit = async ({ data }: FormSubmitEvent<TSchema>) => {
-    const response = await $fetch('/api/ai-chat', {
+    isAnswerPending.value = true
+    await $fetch('/api/ai-chat', {
         method: 'POST',
-        body: data
+        body: data,
+        responseType: 'stream',
+        onResponse: async ({ response }) => {
+            if (response.body) {
+                const stream = response.body.pipeThrough(new TextDecoderStream())
+                for await (const chunk of stream) {
+                    isAnswerPending.value = false
+                    bottomMessage.value += chunk
+                }
+            }
+        }
     })
-    bottomMessage.value += response
 }
 
 const handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === 'Enter' && !event.shiftKey && form) {
         form.value?.submit()
+        form.value?.clear()
     }
 }
 </script>
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
         <UContainer class="flex-1">
-            <p class="w-full wrap-break-word">
-                {{ bottomMessage }}
-            </p>
+            <div v-if="isAnswerPending">Thinking...</div>
+            <div v-else v-html="computedMessage" />
         </UContainer>
         <UForm
             ref="ai-chat-form"
@@ -55,3 +71,15 @@ const handleKeyUp = (event: KeyboardEvent) => {
         </UForm>
     </UContainer>
 </template>
+
+<style lang="css" scoped>
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+    opacity: 1;
+}
+</style>

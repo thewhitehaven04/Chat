@@ -7,15 +7,7 @@ export class AiChatService {
         this.adapter = adapter
     }
 
-    async *sendMessage(message: string) {
-        const stream = this.adapter.sendMessage(message)
-
-        for await (const message of stream) {
-            if (message !== undefined) {
-                yield message
-            } else {
-                yield ''
-            }
-        }
+    sendMessage(message: string) {
+        return this.adapter.sendMessage(message)
     }
 }

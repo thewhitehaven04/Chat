@@ -1,3 +1,3 @@
 export interface IAIChatAdapter {
-    sendMessage: (text: string) => AsyncGenerator<string | undefined>
+    sendMessage: (text: string) => ReadableStream<string> 
 }
