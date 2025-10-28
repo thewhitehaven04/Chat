@@ -109,11 +109,6 @@ onUnmounted(() => {
         observer.disconnect()
     }
 })
-
-const router = useRouter()
-const onClose = () => {
-    router.push('/')
-}
 </script>
 
 <template>

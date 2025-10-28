@@ -3,9 +3,10 @@ import { ChatService } from '../modules/chat/service'
 import { AuthService } from '../modules/auth/service'
 import type { IMessageInputDto } from '~~/server/modules/chat/models/types'
 import { ProfileService } from '~~/server/modules/profile/service'
+import type { IChatService } from '../modules/chat/types'
 
 function defineChatHandler() {
-    const clientMap = new Map<string, ChatService>()
+    const chatServiceMap = new Map<string, IChatService>()
 
     return defineWebSocketHandler({
         async open(peer) {
@@ -47,7 +48,7 @@ function defineChatHandler() {
                 profileService
             )
 
-            clientMap.set(peer.id, chat)
+            chatServiceMap.set(peer.id, chat)
 
             chat.subscribe((_, newMessage) => {
                 peer.send(JSON.stringify(newMessage))
@@ -57,14 +58,14 @@ function defineChatHandler() {
         async message(peer, message) {
             const messageDto = message.json<IMessageInputDto>()
             try {
-                await clientMap.get(peer.id)?.sendMessage(messageDto)
+                await chatServiceMap.get(peer.id)?.sendMessage(messageDto)
             } catch (_error) {
                 peer.send({ success: false, data: null, error: 'Something went wrong' })
             }
         },
 
         close(peer) {
-            clientMap.get(peer.id)?.unsubscribe()
+            chatServiceMap.get(peer.id)?.unsubscribe()
         }
     })
 }

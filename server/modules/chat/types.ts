@@ -6,7 +6,11 @@ import type {
     IMessageInputDto
 } from '~~/server/modules/chat/models/types'
 
-export interface IChatService<TClient, TAuthService, TProfileService> {
+export interface IChatService<
+    TClient = unknown,
+    TAuthService = unknown,
+    TProfileService = unknown
+> {
     client: TClient
     authSerivce: TAuthService
     profileSerivce: TProfileService

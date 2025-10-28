@@ -29,6 +29,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
         supabaseUrl: process.env.SUPABASE_URL,
         supabasePublishableKey: process.env.SUPABASE_KEY,
+        aiApiKey: process.env.AI_API_KEY,
         public: {
             supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
             supabasePublishableKey: process.env.NUXT_PUBLIC_PUBLISHABLE_KEY
