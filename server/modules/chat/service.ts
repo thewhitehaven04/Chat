@@ -12,51 +12,35 @@ import type {
     IIncomingMessagePayload,
     IMessageInputDto
 } from '~~/server/modules/chat/models/types'
-import type { ProfileService } from '~~/server/modules/profile/service'
-import type { IChatService, IChatMessageRepository } from './types'
+import type { IChatMessageRepository, IChatService } from './types'
+import type { IAuthService } from '../auth/types'
+import type { ProfileService } from '../profile/service'
 import type { IChatRoomRepository } from '../chat-rooms/types'
 
-class ChatService<
-    TClient extends SupabaseClient<Database>,
-    AuthServiceType extends AuthService<TClient>,
-    ProfileServiceType extends ProfileService<TClient, AuthServiceType>,
-    ChatMessageRepositoryType extends IChatMessageRepository,
-    ChatRoomRepositoryType extends IChatRoomRepository
-> implements
-        IChatService<
-            TClient,
-            AuthServiceType,
-            ProfileServiceType,
-            ChatMessageRepositoryType,
-            ChatRoomRepositoryType
-        >
-{
-    client: TClient
-    authSerivce: AuthServiceType
-    profileSerivce: ProfileServiceType
-    chatMessageRepository: ChatMessageRepositoryType
-    chatRoomRepository: ChatRoomRepositoryType
-    subscriptionChannel: RealtimeChannel | null
+class ChatService implements IChatService {
+    #client: SupabaseClient<Database>
+    #profileSerivce: ProfileService
+    #chatMessageRepository: ChatMessageRepositoryType
+    #chatRoomRepository: ChatRoomRepositoryType
+    #subscriptionChannel: RealtimeChannel | null
 
     constructor(
-        client: TClient,
-        authService: AuthServiceType,
-        profileService: ProfileServiceType,
-        chatMessageRepository: ChatMessageRepositoryType,
-        chatRoomRepository: ChatRoomRepositoryType
+        client: SupabaseClient<Database>,
+        profileService: ProfileService,
+        chatMessageRepository: IChatMessageRepository,
+        chatRoomRepository: IChatRoomRepository
     ) {
-        this.client = client
-        this.authSerivce = authService
-        this.profileSerivce = profileService
-        this.chatMessageRepository = chatMessageRepository
-        this.chatRoomRepository = chatRoomRepository
-        this.subscriptionChannel = null
+        this.#client = client
+        this.#profileSerivce = profileService
+        this.#chatMessageRepository = chatMessageRepository
+        this.#chatRoomRepository = chatRoomRepository
+        this.#subscriptionChannel = null
     }
 
     subscribe(
         messageCallbackFn: (oldMessage: unknown, newMessage: IIncomingMessagePayload) => void
     ) {
-        this.subscriptionChannel = this.client
+        this.#subscriptionChannel = this.#client
             .channel('chat_messages_realtime')
             .on(
                 'postgres_changes',
@@ -66,7 +50,7 @@ class ChatService<
                         Database['public']['Tables']['chat_messages']['Row']
                     >
                 ) => {
-                    const profile = await this.profileSerivce.getProfileData(
+                    const profile = await this.#profileSerivce.getProfileData(
                         payload.new.submitted_by
                     )
                     messageCallbackFn(
@@ -82,23 +66,23 @@ class ChatService<
     }
 
     async sendMessage(message: IMessageInputDto) {
-        return await this.chatMessageRepository.storeMessage(message)
+        return await this.#chatMessageRepository.storeMessage(message)
     }
 
     unsubscribe() {
-        if (this.subscriptionChannel) {
-            this.subscriptionChannel.unsubscribe()
+        if (this.#subscriptionChannel) {
+            this.#subscriptionChannel.unsubscribe()
         }
     }
 
     async getChatHistory(params: IGetChatHistoryRequestDto): Promise<IChatHistoryResponse> {
         const [rawMessagesResponse, chatRoomData] = await Promise.all([
-            this.chatMessageRepository.getChatMessages(
+            this.#chatMessageRepository.getChatMessages(
                 params.chatRoom.toString(),
                 params.skip,
                 params.limit
             ),
-            this.chatRoomRepository.getChatRoom(params.chatRoom.toString())
+            this.#chatRoomRepository.getChatRoom(params.chatRoom.toString())
         ])
 
         if (!chatRoomData) {

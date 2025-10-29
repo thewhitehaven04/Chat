@@ -5,7 +5,7 @@ export default defineEventHandler(async (evt) => {
         z.object({ message: z.string() }).safeParse
     )
     if (!error) {
-        return sendStream(evt, evt.context.aiChat.sendMessage(data?.message) as ReadableStream<string>)
+        return sendStream(evt, evt.context.aiChat.sendMessage(data?.message))
     }
     createError({
         statusCode: 400,

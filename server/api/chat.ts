@@ -4,6 +4,8 @@ import { AuthService } from '../modules/auth/service'
 import type { IMessageInputDto } from '~~/server/modules/chat/models/types'
 import { ProfileService } from '~~/server/modules/profile/service'
 import type { IChatService } from '../modules/chat/types'
+import { ChatMessageRepository } from '../modules/chat/repository'
+import { ChatRoomRepository } from '../modules/chat-rooms/repository'
 
 function defineChatHandler() {
     const chatServiceMap = new Map<string, IChatService>()
@@ -41,11 +43,12 @@ function defineChatHandler() {
             )
 
             const auth = new AuthService(serverClient)
-            const profileService = new ProfileService(serverClient, auth)
             const chat = new ChatService(
                 serverClient,
-                new AuthService(serverClient),
-                profileService
+                auth,
+                new ProfileService(serverClient, auth),
+                new ChatMessageRepository(serverClient),
+                new ChatRoomRepository(serverClient)
             )
 
             chatServiceMap.set(peer.id, chat)

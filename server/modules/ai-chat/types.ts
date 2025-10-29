@@ -1,4 +1,4 @@
-import type { IAIChatMessageInputDto } from './models/types'
+import type { IAIChatMessageDto, IAIChatMessageInputDto } from './models/types'
 
 export interface IAIChatMessageRepository {
     storeUserMessage(message: IAIChatMessageInputDto): Promise<unknown>
@@ -7,11 +7,11 @@ export interface IAIChatMessageRepository {
         chatRoomId: string,
         skip: number,
         limit: number
-    ): Promise<{ data: IRawChatMessagePayload[]; count: number | null }>
+    ): Promise<{ data: IAIChatMessageDto[]; count: number | null }>
 }
 
 export interface IAiChatService {
     setRoomId(roomId: number): void
     createChat(): Promise<void>
-    sendMessage(message: string): Promise<ReadableStream<string>>
+    sendMessage(message: string): ReadableStream<string>
 }

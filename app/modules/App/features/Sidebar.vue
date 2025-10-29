@@ -11,23 +11,21 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
             label: 'Chats',
             icon: 'i-lucide-message-circle',
             defaultOpen: true,
-            children: chatRooms.value
-                ?.filter((room) => room.type === 'default')
-                .map((room) => ({
+            children:
+                chatRooms.value?.map((room) => ({
                     label: room.name,
                     to: `/chat/${room.id}`
-                }))
+                })) || []
         },
         {
             label: 'AI Chats',
             icon: 'i-lucide-brain-circuit',
             defaultOpen: true,
-            children: chatRooms.value
-                ?.filter((room) => room.type === 'AI')
-                .map((room) => ({
+            children:
+                aiChatRooms.value?.map((room) => ({
                     label: room.name,
                     to: `/chat/${room.id}`
-                }))
+                })) || []
         }
     ]
 ])

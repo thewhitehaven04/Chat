@@ -7,6 +7,6 @@ export interface IChatRoomRepository {
 }
 
 export interface IChatRoomsService {
-    getChatRooms(): Promise<unknown[] | null>
-    createChatRoom(chatRoom: IChatCreateDto): Promise<unknown[] | null>
+    getChatRooms(): Promise<IChatRoomReadDto[]>
+    createChatRoom(chatRoom: IChatCreateDto): Promise<unknown>
 }
