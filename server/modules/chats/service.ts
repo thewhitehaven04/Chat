@@ -1,21 +1,23 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { IChatCreateDto } from '~~/server/modules/chats/models/types'
-import type { Database } from '~~/server/supabase'
-import type { IChatRoomsService } from './types'
+import type { IChatRoomRepository } from '../chat-rooms/types'
 
-class ChatRoomsService<ClientType extends SupabaseClient<Database>> implements IChatRoomsService<ClientType> {
-    client: ClientType
+class ChatRoomsService {
+    #repository: IChatRoomRepository
 
-    constructor(client: ClientType) {
-        this.client = client
+    constructor(chatRoomRepository: IChatRoomRepository) {
+        this.#repository = chatRoomRepository
     }
 
     async getChatRooms() {
-        return (await this.client.from('chat_rooms').select('*').throwOnError()).data
+        return this.#repository.getChatRooms()
     }
 
     async createChatRoom(chatRoom: IChatCreateDto) {
-        return (await this.client.from('chat_rooms').insert(chatRoom).throwOnError()).data
+        return this.#repository.createChatRoom({
+            name: chatRoom.name,
+            type: chatRoom.type,
+            description: chatRoom.description ?? undefined
+        })
     }
 }
 

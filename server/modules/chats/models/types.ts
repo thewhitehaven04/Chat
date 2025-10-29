@@ -1,5 +1,6 @@
 export interface IChatCreateDto {
     name: string
+    type: 'AI' | 'default'
     description: string | null
 }
 

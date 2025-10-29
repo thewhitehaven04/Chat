@@ -8,6 +8,8 @@ const md = markdownIt()
 
 const computedMessage = computed(() => md.render(bottomMessage.value))
 
+const hasStartedChatting = ref(false)
+
 const isAnswerPending = ref(false)
 
 const schema = z.object({
@@ -46,11 +48,16 @@ const handleKeyUp = (event: KeyboardEvent) => {
         form.value?.clear()
     }
 }
+
+onUnmounted(() => {
+
+})
+
 </script>
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
         <UContainer class="flex-1">
-            <div v-if="isAnswerPending">Thinking...</div>
+            <div v-if="isAnswerPending">Generating response...</div>
             <div v-else v-html="computedMessage" />
         </UContainer>
         <UForm

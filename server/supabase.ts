@@ -8,6 +8,45 @@ export type Database = {
     }
     public: {
         Tables: {
+            ai_chat_messages: {
+                Row: {
+                    chat_id: number
+                    id: string
+                    submitted_by: string | null
+                    submitter: Database['public']['Enums']['ai_chat_submitters']
+                    text: string
+                }
+                Insert: {
+                    chat_id: number
+                    id?: string
+                    submitted_by?: string | null
+                    submitter: Database['public']['Enums']['ai_chat_submitters']
+                    text: string
+                }
+                Update: {
+                    chat_id?: number
+                    id?: string
+                    submitted_by?: string | null
+                    submitter?: Database['public']['Enums']['ai_chat_submitters']
+                    text?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'ai_chat_messages_chat_id_fkey'
+                        columns: ['chat_id']
+                        isOneToOne: false
+                        referencedRelation: 'chat_rooms'
+                        referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'ai_chat_messages_submitted_by_fkey'
+                        columns: ['submitted_by']
+                        isOneToOne: false
+                        referencedRelation: 'profiles'
+                        referencedColumns: ['id']
+                    }
+                ]
+            }
             chat_messages: {
                 Row: {
                     chat_room: number
@@ -55,16 +94,19 @@ export type Database = {
                     description: string | null
                     id: number
                     name: string
+                    type: Database['public']['Enums']['chat_type']
                 }
                 Insert: {
                     description?: string | null
                     id?: number
                     name: string
+                    type?: Database['public']['Enums']['chat_type']
                 }
                 Update: {
                     description?: string | null
                     id?: number
                     name?: string
+                    type?: Database['public']['Enums']['chat_type']
                 }
                 Relationships: []
             }
@@ -94,7 +136,8 @@ export type Database = {
             [_ in never]: never
         }
         Enums: {
-            [_ in never]: never
+            ai_chat_submitters: 'model' | 'user'
+            chat_type: 'default' | 'AI'
         }
         CompositeTypes: {
             [_ in never]: never
@@ -221,6 +264,9 @@ export type CompositeTypes<
 
 export const Constants = {
     public: {
-        Enums: {}
+        Enums: {
+            ai_chat_submitters: ['model', 'user'],
+            chat_type: ['default', 'AI']
+        }
     }
 } as const

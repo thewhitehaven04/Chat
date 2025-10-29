@@ -13,27 +13,43 @@ import type {
     IMessageInputDto
 } from '~~/server/modules/chat/models/types'
 import type { ProfileService } from '~~/server/modules/profile/service'
-import type { IChatService } from './types'
+import type { IChatService, IChatMessageRepository } from './types'
+import type { IChatRoomRepository } from '../chat-rooms/types'
 
 class ChatService<
     TClient extends SupabaseClient<Database>,
     AuthServiceType extends AuthService<TClient>,
-    ProfileServiceType extends ProfileService<TClient, AuthServiceType>
-> implements IChatService<TClient, AuthServiceType, ProfileServiceType>
+    ProfileServiceType extends ProfileService<TClient, AuthServiceType>,
+    ChatMessageRepositoryType extends IChatMessageRepository,
+    ChatRoomRepositoryType extends IChatRoomRepository
+> implements
+        IChatService<
+            TClient,
+            AuthServiceType,
+            ProfileServiceType,
+            ChatMessageRepositoryType,
+            ChatRoomRepositoryType
+        >
 {
     client: TClient
     authSerivce: AuthServiceType
     profileSerivce: ProfileServiceType
+    chatMessageRepository: ChatMessageRepositoryType
+    chatRoomRepository: ChatRoomRepositoryType
     subscriptionChannel: RealtimeChannel | null
 
     constructor(
         client: TClient,
         authService: AuthServiceType,
-        profileService: ProfileServiceType
+        profileService: ProfileServiceType,
+        chatMessageRepository: ChatMessageRepositoryType,
+        chatRoomRepository: ChatRoomRepositoryType
     ) {
         this.client = client
         this.authSerivce = authService
         this.profileSerivce = profileService
+        this.chatMessageRepository = chatMessageRepository
+        this.chatRoomRepository = chatRoomRepository
         this.subscriptionChannel = null
     }
 
@@ -66,13 +82,7 @@ class ChatService<
     }
 
     async sendMessage(message: IMessageInputDto) {
-        return await this.client
-            .from('chat_messages')
-            .insert({
-                text: message.text,
-                chat_room: message.chatRoom
-            })
-            .throwOnError()
+        return await this.chatMessageRepository.storeMessage(message)
     }
 
     unsubscribe() {
@@ -82,39 +92,47 @@ class ChatService<
     }
 
     async getChatHistory(params: IGetChatHistoryRequestDto): Promise<IChatHistoryResponse> {
-        const [messages, chatData] = await Promise.all([
-            this.client
-                .from('chat_messages')
-                .select('*, profiles(*)', {
-                    count: 'exact'
-                })
-                .order('submitted_at', {
-                    ascending: false
-                })
-                .filter('chat_room', 'eq', params.chatRoom)
-                .range(params.skip, params.skip + params.limit),
-            this.client
-                .from('chat_rooms')
-                .select('*')
-                .filter('id', 'eq', params.chatRoom)
-                .single()
-                .throwOnError()
+        const [rawMessagesResponse, chatRoomData] = await Promise.all([
+            this.chatMessageRepository.getChatMessages(
+                params.chatRoom.toString(),
+                params.skip,
+                params.limit
+            ),
+            this.chatRoomRepository.getChatRoom(params.chatRoom.toString())
         ])
-        let hasMore = false
-        if (messages.count) {
-            hasMore = messages.count > messages.data.length
+
+        if (!chatRoomData) {
+            throw new Error('Chat room not found')
         }
+
+        let hasMore = false
+        if (rawMessagesResponse.count) {
+            hasMore = rawMessagesResponse.count > rawMessagesResponse.data.length
+        }
+
+        const messages: IIncomingMessagePayload[] = rawMessagesResponse.data.map((rawMessage) => ({
+            chat_room: rawMessage.chat_room,
+            id: rawMessage.id,
+            modified_at: rawMessage.modified_at,
+            submitted_at: rawMessage.submitted_at,
+            submitted_by: {
+                id: rawMessage.profiles.id,
+                name: rawMessage.profiles.name,
+                avatarUrl: rawMessage.profiles.avatar_url
+            },
+            text: rawMessage.text
+        }))
 
         const groups: IChatMessageGroup[] = []
 
-        if (messages.data) {
-            messages.data = messages.data.sort((a, b) => {
+        if (messages) {
+            messages.sort((a, b) => {
                 return new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime()
             })
             let lastGroup: IChatMessageGroup | null = null
-            for (const message of messages.data) {
+            for (const message of messages) {
                 if (lastGroup !== null) {
-                    if (message.submitted_by === lastGroup.submitted_by.id) {
+                    if (message.submitted_by.id === lastGroup.submitted_by.id) {
                         lastGroup.messages.push({
                             id: message.id,
                             text: message.text,
@@ -131,11 +149,7 @@ class ChatService<
                                     submitted_at: message.submitted_at
                                 }
                             ],
-                            submitted_by: {
-                                id: message.submitted_by,
-                                name: message.profiles.name,
-                                avatarUrl: message.profiles.avatar_url
-                            }
+                            submitted_by: message.submitted_by
                         }
                         groups.push(lastGroup)
                     }
@@ -150,11 +164,7 @@ class ChatService<
                                 submitted_at: message.submitted_at
                             }
                         ],
-                        submitted_by: {
-                            id: message.submitted_by,
-                            name: message.profiles.name,
-                            avatarUrl: message.profiles.avatar_url
-                        }
+                        submitted_by: message.submitted_by
                     }
                     groups.push(lastGroup)
                 }
@@ -163,9 +173,9 @@ class ChatService<
 
         return {
             chat: {
-                id: chatData.data.id,
-                name: chatData.data.name,
-                description: chatData.data.description
+                id: chatRoomData.id,
+                name: chatRoomData.name,
+                description: chatRoomData.description
             },
             messageGroups: groups,
             hasMore
