@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import z from 'zod'
+import { useBoolean } from '~/shared/composables/useBoolean'
 import type { IChatCreateDto } from '~~/server/modules/chats/models/types'
 
-const isOpen = ref(false)
+const { val: isModalOpen, toggle: toggleModal } = useBoolean()
+
 const { refresh: refreshChatRooms } = useFetch('/api/chat/rooms')
 
 const creationModalSchema = z.object({
@@ -25,24 +27,17 @@ const handleChatCreate = async (data: IChatCreateDto) => {
             }
         }
     })
-    isOpen.value = false
-}
-
-const handleChatCreateOpen = () => {
-    isOpen.value = true
-}
-const handleClose = () => {
-    isOpen.value = false
+    toggleModal()
 }
 </script>
 
 <template>
-    <UButton variant="soft" @click="handleChatCreateOpen()">Create chat room</UButton>
+    <UButton variant="soft" @click="toggleModal()">Create chat room</UButton>
     <UModal
-        :open="isOpen"
+        :open="isModalOpen"
         title="Create chat room"
         :close="{
-            onClick: handleClose
+            onClick: toggleModal
         }"
     >
         <template #body>

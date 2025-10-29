@@ -49,10 +49,6 @@ const handleKeyUp = (event: KeyboardEvent) => {
     }
 }
 
-onUnmounted(() => {
-
-})
-
 </script>
 <template>
     <UContainer class="flex flex-col gap-4 h-full">

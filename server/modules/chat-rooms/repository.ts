@@ -26,7 +26,6 @@ export class ChatRoomRepository implements IChatRoomRepository {
             id: response.data?.id,
             name: response.data?.name,
             description: response.data?.description,
-            type: response.data?.type
         }
     }
 

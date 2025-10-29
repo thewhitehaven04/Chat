@@ -1,15 +1,15 @@
-import type { ChatRoomsService } from '~~/server/modules/chats/service'
-import type { AuthService } from './modules/auth/service'
-import type { ChatService } from './modules/chat/service'
-import type { ProfileService } from '~~/server/modules/profile/service'
-import type { AiChatService } from './modules/ai-chat/service'
+import type { IChatService } from './modules/chat/types'
+import type { IChatRoomsService } from './modules/chat-rooms/types'
+import type { IProfileService } from './modules/profile/types'
+import type { IAiChatService } from './modules/ai-chat/types'
 
 export declare module 'h3' {
-  interface H3EventContext {
-    auth: AuthService 
-    chat: ChatService
-    chatRooms: ChatRoomsService
-    profile: ProfileService
-    aiChat: AiChatService
-  }
+    interface H3EventContext {
+        auth: AuthService
+        chat: IChatService
+        chatRooms: IChatRoomsService
+        profile: IProfileService
+        aiChatRooms: IAIChatRoomsService
+        aiChat: IAiChatService
+    }
 }

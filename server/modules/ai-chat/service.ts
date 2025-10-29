@@ -1,18 +1,18 @@
 import type { IAIChatAdapter } from '../chat-adapter/types'
 import { format } from 'date-fns'
-import type { IChatRoomRepository } from '../chat-rooms/types'
-import type { IChatMessageRepository } from '../chat/types'
+import type { IAIChatMessageRepository, IAiChatService } from './types'
+import type { IAIChatRoomsRepository } from '../ai-chat-rooms/types'
 
-export class AiChatService {
+export class AiChatService implements IAiChatService {
     #adapter: IAIChatAdapter
-    #chatRoomRepository: IChatRoomRepository
-    #chatRepository: IChatMessageRepository
+    #chatRoomRepository: IAIChatRoomsRepository 
+    #chatRepository: IAIChatMessageRepository
     #chatRoomId: number | null
 
     constructor(
         adapter: IAIChatAdapter,
-        chatRoomRepository: IChatRoomRepository,
-        chatRepository: IChatMessageRepository
+        chatRoomRepository: IAIChatRoomsRepository,
+        chatRepository: IAIChatMessageRepository
     ) {
         this.#adapter = adapter
         this.#chatRoomRepository = chatRoomRepository
@@ -27,7 +27,6 @@ export class AiChatService {
     async createChat() {
         const chatRoom = await this.#chatRoomRepository.createChatRoom({
             name: `test-${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}`,
-            type: 'AI',
             description: 'Test chat'
         })
 
@@ -48,16 +47,16 @@ export class AiChatService {
                     text += result.value
                 }
                 if (result.done && this.#chatRoomId) {
-                    this.#chatRepository.storeMessage({
-                        text: text,
-                        chatRoom: this.#chatRoomId
+                    this.#chatRepository.storeModelMessage({
+                        chatRoomId: this.#chatRoomId,
+                        message: text
                     })
                 }
             })
 
-            this.#chatRepository.storeMessage({
-                text: message,
-                chatRoom: this.#chatRoomId
+            this.#chatRepository.storeUserMessage({
+                message: message,
+                chatRoomId: this.#chatRoomId
             })
         } else throw new Error('Chat room is not set')
 

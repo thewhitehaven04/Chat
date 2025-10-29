@@ -7,7 +7,6 @@ import type { IChatMessageGroup } from '~~/server/modules/chat/models/types'
 definePageMeta({
     validate(route) {
         const roomId = route.params.roomId
-        console.log(roomId)
         const parse = z
             .string()
             .regex(/\d+/, {

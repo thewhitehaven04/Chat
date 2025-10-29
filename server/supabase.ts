@@ -47,6 +47,24 @@ export type Database = {
                     }
                 ]
             }
+            ai_chat_rooms: {
+                Row: {
+                    created_by: string
+                    id: number
+                    name: string
+                }
+                Insert: {
+                    created_by?: string
+                    id?: number
+                    name: string
+                }
+                Update: {
+                    created_by?: string
+                    id?: number
+                    name?: string
+                }
+                Relationships: []
+            }
             chat_messages: {
                 Row: {
                     chat_room: number
@@ -94,19 +112,16 @@ export type Database = {
                     description: string | null
                     id: number
                     name: string
-                    type: Database['public']['Enums']['chat_type']
                 }
                 Insert: {
                     description?: string | null
                     id?: number
                     name: string
-                    type?: Database['public']['Enums']['chat_type']
                 }
                 Update: {
                     description?: string | null
                     id?: number
                     name?: string
-                    type?: Database['public']['Enums']['chat_type']
                 }
                 Relationships: []
             }

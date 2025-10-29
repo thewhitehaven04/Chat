@@ -1,5 +1,5 @@
-import type { IChatCreateDto } from '~~/server/modules/chats/models/types'
-import type { IChatRoomRepository } from '../chat-rooms/types'
+import type { IChatCreateDto } from './models/types'
+import type { IChatRoomRepository } from './types'
 
 class ChatRoomsService {
     #repository: IChatRoomRepository
@@ -15,7 +15,6 @@ class ChatRoomsService {
     async createChatRoom(chatRoom: IChatCreateDto) {
         return this.#repository.createChatRoom({
             name: chatRoom.name,
-            type: chatRoom.type,
             description: chatRoom.description ?? undefined
         })
     }
