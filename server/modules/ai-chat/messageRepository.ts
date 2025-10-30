@@ -10,12 +10,20 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
         this.#client = client
     }
 
+    #getIsoDate() {
+        return new Date().toISOString()
+    }
+
     async storeUserMessage(message: IAIChatMessageInputDto) {
-        await this.#client.from('ai_chat_messages').insert({
-            chat_id: message.chatRoomId,
-            text: message.message,
-            submitter: 'user'
-        })
+        await this.#client
+            .from('ai_chat_messages')
+            .insert({
+                chat_id: message.chatRoomId,
+                text: message.message,
+                submitter: 'user',
+                submitted_at: this.#getIsoDate(),
+            })
+            .throwOnError()
     }
 
     async getChatHistory(chatRoomId: number, skip: number, limit: number) {
@@ -43,10 +51,14 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
     }
 
     async storeModelMessage(message: IAIChatMessageInputDto) {
-        await this.#client.from('ai_chat_messages').insert({
-            chat_id: message.chatRoomId,
-            text: message.message,
-            submitter: 'model'
-        })
+        await this.#client
+            .from('ai_chat_messages')
+            .insert({
+                chat_id: message.chatRoomId,
+                text: message.message,
+                submitter: 'model',
+                submitted_at: this.#getIsoDate(),
+            })
+            .throwOnError()
     }
 }

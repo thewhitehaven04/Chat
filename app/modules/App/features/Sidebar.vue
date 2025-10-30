@@ -28,7 +28,7 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
             children:
                 aiChatRooms.value?.map((room) => ({
                     label: room.name,
-                    to: `/chat/${room.id}`
+                    to: `/ai-chat/${room.id}`
                 })) || []
         }
     ]

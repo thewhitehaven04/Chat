@@ -15,6 +15,7 @@ const handleLogout = async () => {
         color="error"
         class="w-full"
         icon="i-lucide-log-out"
+        to="/sign-in"
         @click="handleLogout()"
         >Logout</UButton
     >

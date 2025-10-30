@@ -5,7 +5,12 @@ const route = useRoute()
 const { data: chatMessages } = useFetch(`/api/ai-chat/${route.params.roomId}/history`)
 
 const handleSubmit = async (message: string) => {
-    await $fetch(`/api/ai-chat/${route.params.roomId}/message`, {})
+    await $fetch(`/api/ai-chat/${route.params.roomId}/message`, {
+        method: 'POST',
+        body: {
+            message
+        }
+    })
 }
 
 const md = new MarkdownIt()

@@ -4,9 +4,11 @@ const { data: aiChatRooms = [], refresh } = useFetch('/api/ai-chat/rooms', {
 })
 
 const isAnswerPending = ref(false)
+const sentMessage = ref<string | null>(null)
 
 const handleSubmit = async (message: string) => {
     isAnswerPending.value = true
+    sentMessage.value = message
     const chatCreationResponse = await $fetch('/api/ai-chat', {
         method: 'POST',
         onResponse: ({ error }) => {
@@ -20,14 +22,17 @@ const handleSubmit = async (message: string) => {
         body: { message }
     })
 
-    await navigateTo(`/ai-chat/${chatCreationResponse.chatId}`)
+    await navigateTo(`/ai-chat/${chatCreationResponse.chatId}`, {
+        replace: true
+    })
 }
 </script>
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
         <UContainer class="flex-1">
+            <p v-if="!!sentMessage">{{ sentMessage }}</p>
             <UContainer
-                v-if="!!aiChatRooms?.length"
+                v-else-if="!!aiChatRooms?.length"
                 class="flex flex-col items-center justify-center"
             >
                 <UButton

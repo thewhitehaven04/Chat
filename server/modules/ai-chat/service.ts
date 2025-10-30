@@ -28,7 +28,7 @@ export class AiChatService implements IAiChatService {
         })
 
         if (chatRoom) {
-            this.#chatRoomId = chatRoom.id 
+            this.#chatRoomId = chatRoom.id
         }
 
         this.#adapter.createChatSession([])
@@ -55,26 +55,34 @@ export class AiChatService implements IAiChatService {
         this.#adapter.createChatSession(contentInstances)
     }
 
-    sendMessage(message: string) {
+    async sendMessage(message: string) {
         const response = this.#adapter.sendMessage(message)
         const [messageStream, responseStream] = response.tee()
 
         if (this.#chatRoomId) {
             const reader = messageStream.getReader()
             let text = ''
-            reader.read().then((result) => {
+
+            const processModelMessage = async (
+                result: ReadableStreamReadResult<string>
+            ): Promise<void> => {
                 if (result.value) {
                     text += result.value
                 }
                 if (result.done && this.#chatRoomId) {
-                    this.#chatRepository.storeModelMessage({
+                    await this.#chatRepository.storeModelMessage({
                         chatRoomId: this.#chatRoomId,
                         message: text
                     })
+                    return
                 }
-            })
 
-            this.#chatRepository.storeUserMessage({
+                return reader.read().then(processModelMessage)
+            }
+
+            reader.read().then(processModelMessage)
+
+            await this.#chatRepository.storeUserMessage({
                 message: message,
                 chatRoomId: this.#chatRoomId
             })

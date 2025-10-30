@@ -12,6 +12,7 @@ export type Database = {
                 Row: {
                     chat_id: number
                     id: string
+                    submitted_at: string
                     submitted_by: string | null
                     submitter: Database['public']['Enums']['ai_chat_submitters']
                     text: string
@@ -19,6 +20,7 @@ export type Database = {
                 Insert: {
                     chat_id: number
                     id?: string
+                    submitted_at: string
                     submitted_by?: string | null
                     submitter: Database['public']['Enums']['ai_chat_submitters']
                     text: string
@@ -26,6 +28,7 @@ export type Database = {
                 Update: {
                     chat_id?: number
                     id?: string
+                    submitted_at?: string
                     submitted_by?: string | null
                     submitter?: Database['public']['Enums']['ai_chat_submitters']
                     text?: string
@@ -63,7 +66,15 @@ export type Database = {
                     id?: number
                     name?: string
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: 'ai_chat_rooms_created_by_fkey'
+                        columns: ['created_by']
+                        isOneToOne: false
+                        referencedRelation: 'profiles'
+                        referencedColumns: ['id']
+                    }
+                ]
             }
             chat_messages: {
                 Row: {

@@ -17,7 +17,7 @@ export interface IAIChatMessageRepository {
 
 export interface IAiChatService {
     createChat(): Promise<{ chatId: number }>
-    sendMessage(message: string): ReadableStream<string>
+    sendMessage(message: string): Promise<ReadableStream<string>>
     setExistingChat(chatId: number): Promise<void>
     getChatHistory(chatId: number): Promise<{ data: IAIChatMessageDto[]; count: number | null }>
 }
