@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-const { data: chatRooms } = useFetch('/api/chat/rooms')
+const { data: chatRooms } = useFetch('/api/chat/rooms', {
+    key: 'chatRooms'
+})
 const { data: aiChatRooms } = useFetch('/api/ai-chat/rooms', {
     key: 'aiChatRooms'
 })
-const { data: profile } = useFetch('/api/profile')
+const { data: profile } = useFetch('/api/profile', { key: 'profile' })
 
 const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
     [

@@ -7,6 +7,7 @@ import {
 const isEditing = ref(false)
 
 const { data: profile } = useFetch('/api/profile', {
+    key: 'profile',
     onResponse: ({ response, error }) => {
         if (!error && response._data) {
             formState.name = response._data.name
@@ -38,7 +39,6 @@ const handleSubmit = async ({ data }: FormSubmitEvent<TProfileUpdateDto>) => {
         onResponse: ({ error }) => {
             if (!error) {
                 toggleEdit()
-                refreshNuxtData('/api/profile')
             }
         }
     })
