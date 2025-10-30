@@ -8,7 +8,7 @@ export default defineEventHandler(async (evt) => {
         z.object({ message: z.string() }).safeParse
     )
     if (!error) {
-        evt.context.aiChat.setExistingChat(Number(chatId))
+        await evt.context.aiChat.setExistingChat(Number(chatId))
         return sendStream(evt, evt.context.aiChat.sendMessage(data?.message))
     }
     createError({

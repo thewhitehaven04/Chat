@@ -22,17 +22,13 @@ export class AiChatService implements IAiChatService {
         this.#chatRoomId = null
     }
 
-    setRoomId(roomId: number) {
-        this.#chatRoomId = roomId
-    }
-
     async createChat() {
         const chatRoom = await this.#chatRoomRepository.createChatRoom({
             name: `test-${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}`
         })
 
         if (chatRoom) {
-            this.setRoomId(chatRoom.id)
+            this.#chatRoomId = chatRoom.id 
         }
 
         this.#adapter.createChatSession([])
@@ -41,7 +37,7 @@ export class AiChatService implements IAiChatService {
     }
 
     async setExistingChat(chatId: number) {
-        this.setRoomId(chatId)
+        this.#chatRoomId = chatId
         const history = await this.#chatRepository.getChatHistory(
             chatId,
             0,

@@ -1,42 +1,53 @@
 <script setup lang="ts">
-
-import markdownIt from 'markdown-it'
-
-const { data: aiChatRooms = [] } = useFetch('/api/ai-chat/rooms')
+const { data: aiChatRooms = [], refresh } = useFetch('/api/ai-chat/rooms', {
+    key: 'aiChatRooms'
+})
 
 const isAnswerPending = ref(false)
 
 const handleSubmit = async (message: string) => {
     isAnswerPending.value = true
-    await $fetch('/api/ai-chat', {
+    const chatCreationResponse = await $fetch('/api/ai-chat', {
         method: 'POST',
-        body: {  },
-        responseType: 'stream',
-        onResponse: async ({ response }) => {
-            if (response.body) {
-                const stream = response.body.pipeThrough(new TextDecoderStream())
-                for await (const chunk of stream) {
-                    isAnswerPending.value = false
-                    bottomMessage.value += chunk
-                }
+        onResponse: ({ error }) => {
+            if (!error) {
+                refresh()
             }
         }
     })
+    await $fetch(`/api/ai-chat/${chatCreationResponse.chatId}/message`, {
+        method: 'POST',
+        body: { message }
+    })
+
+    await navigateTo(`/ai-chat/${chatCreationResponse.chatId}`)
 }
 </script>
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
         <UContainer class="flex-1">
-            <UButton
-v-for="chatRoom in aiChatRooms"
-
+            <UContainer
+                v-if="!!aiChatRooms?.length"
+                class="flex flex-col items-center justify-center"
+            >
+                <UButton
+                    v-for="aiChatRoom in aiChatRooms"
+                    :key="aiChatRoom.id"
+                    variant="ghost"
+                    color="secondary"
+                    size="lg"
+                    :label="aiChatRoom.name"
+                    :href="`/ai-chat/${aiChatRoom.id}`"
+                />
+            </UContainer>
+            <p v-else class="text-lg font-md">You haven't started chatting yet</p>
         </UContainer>
         <ChatFeaturesMessageSubmissionForm
             :is-disabled="false"
             @message-submitted="handleSubmit($event)"
         />
-    </ubutton></UContainer>
-</ucontainer></template>
+    </UContainer>
+</template>
 
 <style lang="css" scoped>
 .fade-enter-from,

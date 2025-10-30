@@ -32,7 +32,10 @@ const handleChatCreate = async (data: IChatCreateDto) => {
 </script>
 
 <template>
-    <UButton variant="soft" @click="toggleModal()">Create chat room</UButton>
+    <UButton variant="soft" @click="toggleModal()">
+        <UIcon name="i-lucide-message-circle" />
+        Create chat room
+    </UButton>
     <UModal
         :open="isModalOpen"
         title="Create chat room"

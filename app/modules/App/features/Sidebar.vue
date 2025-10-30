@@ -2,7 +2,9 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const { data: chatRooms } = useFetch('/api/chat/rooms')
-const { data: aiChatRooms } = useFetch('/api/ai-chat/rooms')
+const { data: aiChatRooms } = useFetch('/api/ai-chat/rooms', {
+    key: 'aiChatRooms'
+})
 const { data: profile } = useFetch('/api/profile')
 
 const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
@@ -40,7 +42,9 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
             <UNavigationMenu orientation="vertical" variant="pill" :items="items[0]">
                 <template #list-leading>
                     <AppFeaturesComponentsChatRoomCreateButton />
-                    <UButton variant="soft" href="/ai-chat" icon="i-lucide-bot">Chat with AI</UButton>
+                    <UButton variant="soft" href="/ai-chat" icon="i-lucide-bot"
+                        >Chat with AI</UButton
+                    >
                 </template>
             </UNavigationMenu>
         </template>

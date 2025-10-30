@@ -3,7 +3,6 @@ import type {
     RealtimePostgresInsertPayload,
     SupabaseClient
 } from '@supabase/supabase-js'
-import type { AuthService } from '../auth/service'
 import type { Database } from '~~/server/supabase'
 import type {
     IChatHistoryResponse,

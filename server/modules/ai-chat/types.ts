@@ -16,7 +16,6 @@ export interface IAIChatMessageRepository {
 }
 
 export interface IAiChatService {
-    setRoomId(roomId: number): void
     createChat(): Promise<{ chatId: number }>
     sendMessage(message: string): ReadableStream<string>
     setExistingChat(chatId: number): Promise<void>
