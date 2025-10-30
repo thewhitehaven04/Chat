@@ -1,18 +1,26 @@
-import { GoogleGenAI, type Chat, type Content, type Part } from '@google/genai'
+import { GoogleGenAI, type Chat, type Part } from '@google/genai'
 import type { IAIChatAdapter } from './types'
+import { DomainError } from '~~/server/shared/DomainError'
+import type { IContentInstance } from './models/types'
 
 export class GeminiChatAdapter implements IAIChatAdapter {
-    private client: GoogleGenAI
-    private chat: Chat
+    #client: GoogleGenAI
+    #chat: Chat | null
 
-    constructor(history: Content[] = []) {
+    constructor() {
         const apiKey = useRuntimeConfig().aiApiKey
-        this.client = new GoogleGenAI({ apiKey })
-        this.chat = this.client.chats.create({ model: 'gemini-2.5-flash', history })
+        this.#client = new GoogleGenAI({ apiKey })
+        this.#chat = null
+    }
+
+    createChatSession(history: IContentInstance[] = []) {
+        this.#chat = this.#client.chats.create({ model: 'gemini-2.5-flash', history })
     }
 
     sendMessage(text: string) {
-        const stream = this.chat.sendMessageStream({
+        if (this.#chat === null) throw new DomainError('Chat session is not initialized')
+
+        const stream = this.#chat.sendMessageStream({
             message: text
         })
         return new ReadableStream<string>({
@@ -33,7 +41,9 @@ export class GeminiChatAdapter implements IAIChatAdapter {
     }
 
     async getMessages() {
-        const content = this.chat.getHistory(true)
+        if (this.#chat === null) throw new DomainError('Chat session is not initialized')
+
+        const content = this.#chat.getHistory(true)
         const messages = content
             .map((c) => (c.parts ? this.#getPartsTextContent(c.parts) : null))
             .filter(Boolean)

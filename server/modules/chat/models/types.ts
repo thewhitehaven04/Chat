@@ -1,5 +1,5 @@
-import type { IChatDto } from '~~/server/modules/chats/models/types'
 import type { IProfileReadDto } from '~~/server/modules/profile/models/types'
+import type { IChatDto } from '../../chat-rooms/models/types'
 
 export interface IMessageInputDto {
     chatRoom: number

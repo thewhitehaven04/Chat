@@ -6,8 +6,11 @@ import { AiChatService } from '../modules/ai-chat/service'
 import { GeminiChatAdapter } from '../modules/chat-adapter/gemini-chat'
 import { ChatMessageRepository } from '../modules/chat/repository'
 import { ChatRoomRepository } from '../modules/chat-rooms/repository'
-import { AIChatMessageRepository } from '../modules/ai-chat/repository'
-import { AIChatRoomsRepository } from '../modules/ai-chat-rooms/repository'
+import { AIChatMessageRepository } from '../modules/ai-chat/messageRepository'
+import { AIChatRoomsRepository } from '../modules/ai-chat/roomRepository'
+import { ChatRoomsService } from '../modules/chat-rooms/service'
+import { AiChatRoomsService } from '../modules/ai-chat-rooms/service'
+import { AIChatRoomsRepository as AiChatRoomsRepository } from '../modules/ai-chat-rooms/repository'
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig()
@@ -36,22 +39,22 @@ export default defineEventHandler(async (event) => {
     )
 
     const auth = new AuthService(serverClient)
-    event.context.auth = auth
     const profile = new ProfileService(serverClient, auth)
-    event.context.profile = profile
-
     const chatMessageRepository = new ChatMessageRepository(serverClient)
     const chatRoomRepository = new ChatRoomRepository(serverClient)
+    const adapter = new GeminiChatAdapter()
+    const aiChatRepository = new AIChatMessageRepository(serverClient)
+    const aiChatRoomRepository = new AIChatRoomsRepository(serverClient)
+
+    event.context.auth = auth
+    event.context.profile = profile
     event.context.chat = new ChatService(
         serverClient,
-        auth,
         profile,
         chatMessageRepository,
         chatRoomRepository
     )
-
-    const adapter = new GeminiChatAdapter()
-    const aiChatRepository = new AIChatMessageRepository(serverClient)
-    const aiChatRoomRepository = new AIChatRoomsRepository(serverClient)
+    event.context.chatRooms = new ChatRoomsService(chatRoomRepository)
     event.context.aiChat = new AiChatService(adapter, aiChatRoomRepository, aiChatRepository)
+    event.context.aiChatRooms = new AiChatRoomsService(new AiChatRoomsRepository(serverClient))
 })

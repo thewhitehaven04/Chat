@@ -1,13 +1,15 @@
 import type { IAIChatAdapter } from '../chat-adapter/types'
 import { format } from 'date-fns'
-import type { IAIChatMessageRepository, IAiChatService } from './types'
-import type { IAIChatRoomsRepository } from '../ai-chat-rooms/types'
+import type { IAIChatMessageRepository, IAIChatRoomsRepository, IAiChatService } from './types'
+import type { IContentInstance } from '../chat-adapter/models/types'
 
 export class AiChatService implements IAiChatService {
     #adapter: IAIChatAdapter
-    #chatRoomRepository: IAIChatRoomsRepository 
+    #chatRoomRepository: IAIChatRoomsRepository
     #chatRepository: IAIChatMessageRepository
     #chatRoomId: number | null
+
+    static CHAT_WINDOW = 1000
 
     constructor(
         adapter: IAIChatAdapter,
@@ -26,16 +28,38 @@ export class AiChatService implements IAiChatService {
 
     async createChat() {
         const chatRoom = await this.#chatRoomRepository.createChatRoom({
-            name: `test-${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}`,
-            description: 'Test chat'
+            name: `test-${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}`
         })
 
         if (chatRoom) {
             this.setRoomId(chatRoom.id)
         }
+
+        this.#adapter.createChatSession([])
+
+        return { chatId: chatRoom.id, name: chatRoom.name, createdBy: chatRoom.createdBy }
     }
 
-    async sendMessage(message: string) {
+    async setExistingChat(chatId: number) {
+        this.setRoomId(chatId)
+        const history = await this.#chatRepository.getChatHistory(
+            chatId,
+            0,
+            AiChatService.CHAT_WINDOW
+        )
+        const contentInstances: IContentInstance[] = history.data.map((d) => ({
+            role: d.submitter,
+            parts: [
+                {
+                    text: d.message
+                }
+            ]
+        }))
+
+        this.#adapter.createChatSession(contentInstances)
+    }
+
+    sendMessage(message: string) {
         const response = this.#adapter.sendMessage(message)
         const [messageStream, responseStream] = response.tee()
 
@@ -61,5 +85,9 @@ export class AiChatService implements IAiChatService {
         } else throw new Error('Chat room is not set')
 
         return responseStream
+    }
+
+    async getChatHistory(chatId: number) {
+        return await this.#chatRepository.getChatHistory(chatId, 0, AiChatService.CHAT_WINDOW)
     }
 }

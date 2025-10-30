@@ -34,13 +34,13 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
 <template>
     <UDashboardSidebar :collapsible="false" :resizable="false">
         <template #header>
-            <span>Multichat</span>
+            <h1 class="text-lg">Multichat</h1>
         </template>
         <template #default>
             <UNavigationMenu orientation="vertical" variant="pill" :items="items[0]">
                 <template #list-leading>
                     <AppFeaturesComponentsChatRoomCreateButton />
-                    <ULink as="button" class="text-green-600" href="/ai-chat">AI chat</ULink>
+                    <UButton variant="soft" href="/ai-chat" icon="i-lucide-bot">Chat with AI</UButton>
                 </template>
             </UNavigationMenu>
         </template>

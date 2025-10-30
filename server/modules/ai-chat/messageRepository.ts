@@ -18,10 +18,10 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
         })
     }
 
-    async getChatHistory(chatRoomId: string, skip: number, limit: number) {
+    async getChatHistory(chatRoomId: number, skip: number, limit: number) {
         const { data, count } = await this.#client
             .from('ai_chat_messages')
-            .select('*, profiles(*)', {
+            .select('*', {
                 count: 'exact'
             })
             .order('submitted_at', {
@@ -31,7 +31,15 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
             .range(skip, skip + limit)
             .throwOnError()
 
-        return { data, count }
+        return {
+            data: data.map((m) => ({
+                id: m.id,
+                message: m.text,
+                chatRoomId: m.chat_id,
+                submitter: m.submitter
+            })),
+            count
+        }
     }
 
     async storeModelMessage(message: IAIChatMessageInputDto) {

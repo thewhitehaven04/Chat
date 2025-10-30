@@ -45,7 +45,6 @@ function defineChatHandler() {
             const auth = new AuthService(serverClient)
             const chat = new ChatService(
                 serverClient,
-                auth,
                 new ProfileService(serverClient, auth),
                 new ChatMessageRepository(serverClient),
                 new ChatRoomRepository(serverClient)

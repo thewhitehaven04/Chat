@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { IAiChatRoomsRepository } from './types'
 import type { Database } from '~~/server/supabase'
-import type { IAIChatRoomsRepository } from './types'
-import type { IAIChatRoomCreateDto } from './models/types'
+import { DatabaseError } from '~~/server/shared/DatabaseError'
 
-export class AIChatRoomsRepository implements IAIChatRoomsRepository {
+export class AIChatRoomsRepository implements IAiChatRoomsRepository {
     #client: SupabaseClient<Database>
 
     constructor(client: SupabaseClient<Database>) {
@@ -11,21 +11,16 @@ export class AIChatRoomsRepository implements IAIChatRoomsRepository {
     }
 
     async getAIChatRooms() {
-        return (await this.#client.from('ai_chat_rooms').select('*').throwOnError()).data.map(
-            (item) => ({
+        const { data, error } = await this.#client.from('ai_chat_rooms').select('*').throwOnError()
+
+        if (!error) {
+            return data.map((item) => ({
                 id: item.id,
                 name: item.name,
                 createdBy: item.created_by
-            })
-        )
-    }
+            }))
+        }
 
-    async createChatRoom(data: IAIChatRoomCreateDto) {
-        await this.#client
-            .from('ai_chat_rooms')
-            .insert({
-                name: data.name
-            })
-            .throwOnError()
+        throw new DatabaseError('Unable to get the rooms')
     }
 }

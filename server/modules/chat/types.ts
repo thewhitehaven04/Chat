@@ -1,14 +1,9 @@
-import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
 import type {
     IChatHistoryResponse,
     IGetChatHistoryRequestDto,
     IIncomingMessagePayload,
     IMessageInputDto
 } from '~~/server/modules/chat/models/types'
-import type { Database } from '~~/server/supabase'
-import type { IChatRoomRepository } from '../chat-rooms/types'
-import type { AuthService } from '../auth/service'
-import type { ProfileService } from '../profile/service'
 
 export interface IRawProfileData {
     id: string
@@ -40,5 +35,6 @@ export interface IChatService {
         messageCallbackFn: (oldMessage: unknown, newMessage: IIncomingMessagePayload) => void
     ): void
     unsubscribe(): void
+    sendMessage(message: IMessageInputDto): Promise<unknown>
     getChatHistory(params: IGetChatHistoryRequestDto): Promise<IChatHistoryResponse>
 }

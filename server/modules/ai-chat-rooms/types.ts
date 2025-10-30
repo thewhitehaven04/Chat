@@ -1,11 +1,9 @@
-import type { IAIChatRoomCreateDto, IAIChatRoomDto } from './models/types'
+import type { IAIChatRoomDto } from './modules/types'
 
-export interface IAIChatRoomsRepository {
-    createChatRoom: (data: IAIChatRoomCreateDto) => Promise<unknown>
-    getAIChatRooms: () => Promise<IAIChatRoomDto[]>
+export interface IAiChatRoomsService {
+    getAIChatRooms(): Promise<IAIChatRoomDto[]>
 }
 
-export interface IAIChatRoomsService {
-    createChatRoom: (data: IAIChatRoomCreateDto) => Promise<IAIChatRoomDto>
-    getChatRooms(): Promise<IAIChatRoomDto[]>
+export interface IAiChatRoomsRepository {
+    getAIChatRooms: () => Promise<IAIChatRoomDto[]>
 }

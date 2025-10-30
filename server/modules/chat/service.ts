@@ -13,15 +13,14 @@ import type {
     IMessageInputDto
 } from '~~/server/modules/chat/models/types'
 import type { IChatMessageRepository, IChatService } from './types'
-import type { IAuthService } from '../auth/types'
 import type { ProfileService } from '../profile/service'
 import type { IChatRoomRepository } from '../chat-rooms/types'
 
 class ChatService implements IChatService {
     #client: SupabaseClient<Database>
     #profileSerivce: ProfileService
-    #chatMessageRepository: ChatMessageRepositoryType
-    #chatRoomRepository: ChatRoomRepositoryType
+    #chatMessageRepository: IChatMessageRepository
+    #chatRoomRepository: IChatRoomRepository
     #subscriptionChannel: RealtimeChannel | null
 
     constructor(

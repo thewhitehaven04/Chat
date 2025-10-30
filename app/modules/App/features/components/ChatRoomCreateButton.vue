@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import z from 'zod'
 import { useBoolean } from '~/shared/composables/useBoolean'
-import type { IChatCreateDto } from '~~/server/modules/chats/models/types'
+import type { IChatCreateDto } from '~~/server/modules/chat-rooms/models/types'
 
 const { val: isModalOpen, toggle: toggleModal } = useBoolean()
 
