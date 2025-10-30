@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { IAIChatMessageRepository } from './types'
 import type { Database } from '~~/server/supabase'
-import type { IAIChatMessageInputDto } from './models/types'
+import type { IAIChatMessageDto, IAIChatMessageInputDto } from './models/types'
 
 export class AIChatMessageRepository implements IAIChatMessageRepository {
     #client: SupabaseClient<Database>
@@ -21,7 +21,7 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
                 chat_id: message.chatRoomId,
                 text: message.message,
                 submitter: 'user',
-                submitted_at: this.#getIsoDate(),
+                submitted_at: this.#getIsoDate()
             })
             .throwOnError()
     }
@@ -44,7 +44,8 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
                 id: m.id,
                 message: m.text,
                 chatRoomId: m.chat_id,
-                submitter: m.submitter
+                submitter: m.submitter,
+                date: m.submitted_at
             })),
             count
         }
@@ -57,8 +58,26 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
                 chat_id: message.chatRoomId,
                 text: message.message,
                 submitter: 'model',
-                submitted_at: this.#getIsoDate(),
+                submitted_at: this.#getIsoDate()
             })
             .throwOnError()
+    }
+
+    async getChatMessage(chatRoomId: number, messageId: string): Promise<IAIChatMessageDto> {
+        const { data } = await this.#client
+            .from('ai_chat_messages')
+            .select('*')
+            .eq('id', messageId)
+            .eq('chat_id', chatRoomId)
+            .single()
+            .throwOnError()
+
+        return {
+            id: data.id,
+            message: data.text,
+            chatRoomId: data.chat_id,
+            submitter: data.submitter,
+            date: data.submitted_at
+        }
     }
 }

@@ -13,11 +13,13 @@ export interface IAIChatMessageRepository {
         skip: number,
         limit: number
     ): Promise<{ data: IAIChatMessageDto[]; count: number | null }>
+    getChatMessage(chatRoomId: number, messageId: string): Promise<IAIChatMessageDto>
 }
 
 export interface IAiChatService {
     createChat(): Promise<{ chatId: number }>
     sendMessage(message: string): Promise<ReadableStream<string>>
+    getMessage(messageId: string): Promise<IAIChatMessageDto>
     setExistingChat(chatId: number): Promise<void>
     getChatHistory(chatId: number): Promise<{ data: IAIChatMessageDto[]; count: number | null }>
 }

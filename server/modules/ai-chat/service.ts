@@ -2,6 +2,7 @@ import type { IAIChatAdapter } from '../chat-adapter/types'
 import { format } from 'date-fns'
 import type { IAIChatMessageRepository, IAIChatRoomsRepository, IAiChatService } from './types'
 import type { IContentInstance } from '../chat-adapter/models/types'
+import { DomainError } from '~~/server/shared/DomainError'
 
 export class AiChatService implements IAiChatService {
     #adapter: IAIChatAdapter
@@ -86,12 +87,19 @@ export class AiChatService implements IAiChatService {
                 message: message,
                 chatRoomId: this.#chatRoomId
             })
-        } else throw new Error('Chat room is not set')
+        } else throw new DomainError('Chat room is not set')
 
         return responseStream
     }
 
     async getChatHistory(chatId: number) {
         return await this.#chatRepository.getChatHistory(chatId, 0, AiChatService.CHAT_WINDOW)
+    }
+
+    async getMessage(messageId: string) {
+        if (this.#chatRoomId) {
+            return await this.#chatRepository.getChatMessage(this.#chatRoomId, messageId)
+        }
+        throw new DomainError('Chat room is not set')
     }
 }
