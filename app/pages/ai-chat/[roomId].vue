@@ -8,57 +8,76 @@ const pendingModelResponse = ref<IChatMessageProps | null>(null)
 const lastUserRequest = ref<IChatMessageProps | null>(null)
 
 const isWaitingForResponse = ref(false)
-watch(
-    () => chatMessages.value,
-    (chatMessages) => {
-        if (chatMessages) {
-            messages.value = chatMessages?.data.map((message) => ({
-                message: message.message,
-                type: message.submitter,
-                id: message.id,
-                date: new Date(message.date)
-            }))
-        }
+
+watch(chatMessages, (chatMessages) => {
+    if (chatMessages) {
+        messages.value = chatMessages?.data.map((message) => ({
+            message: message.message,
+            type: message.submitter,
+            id: message.id,
+            date: new Date(message.date)
+        }))
     }
-)
+})
+
+const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+        if (scrollTarget.value) {
+            scrollTarget.value.scroll({
+                behavior: 'smooth',
+                top: scrollTarget.value.scrollHeight
+            })
+        }
+    })
+}
 
 const handleSubmit = async (message: string) => {
     isWaitingForResponse.value = true
+
     lastUserRequest.value = {
         date: new Date(),
         message: message,
         type: 'user'
     }
-    const response = await $fetch(`/api/ai-chat/${route.params.roomId}/message`, {
-        method: 'POST',
-        responseType: 'stream',
-        body: {
-            message
-        }
-    })
+    scrollToBottom()
 
-    for await (const chunk of response) {
-        if (!pendingModelResponse.value) {
-            pendingModelResponse.value = {
-                date: new Date(),
-                message: '',
-                type: 'model'
+    const reader = (
+        await $fetch<ReadableStream<string>>(`/api/ai-chat/${route.params.roomId}/message`, {
+            method: 'POST',
+            responseType: 'stream',
+            body: {
+                message
             }
-        } else {
-            pendingModelResponse.value.message = pendingModelResponse.value.message + chunk
-        }
+        })
+    ).getReader()
+
+    pendingModelResponse.value = {
+        date: new Date(),
+        message: '',
+        type: 'model'
     }
+    let nextChunk = await reader.read()
+    scrollToBottom()
+    while (!nextChunk.done) {
+        pendingModelResponse.value.message += nextChunk.value
+        nextChunk = await reader.read()
+    }
+
     requestAnimationFrame(async () => {
         await refresh()
         lastUserRequest.value = null
         pendingModelResponse.value = null
     })
 }
+const scrollTarget = useTemplateRef('scrollingContainer')
 </script>
 
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
-        <UContainer class="flex-1 flex flex-col items-stretch w-full gap-4">
+        <div
+            ref="scrollingContainer"
+            class="flex-1 flex flex-col items-stretch w-full gap-4 overflow-y-scroll"
+        >
             <AiChatFeaturesChatMessage
                 v-for="message in messages"
                 :key="message.id"
@@ -66,7 +85,19 @@ const handleSubmit = async (message: string) => {
                 :type="message.type"
                 :message="message.message"
             />
-        </UContainer>
+            <AiChatFeaturesChatMessage
+                v-if="!!lastUserRequest"
+                :date="lastUserRequest.date"
+                :type="lastUserRequest.type"
+                :message="lastUserRequest.message"
+            />
+            <AiChatFeaturesChatMessage
+                v-if="!!pendingModelResponse"
+                :date="pendingModelResponse.date"
+                :type="pendingModelResponse.type"
+                :message="pendingModelResponse.message"
+            />
+        </div>
         <ChatFeaturesMessageSubmissionForm
             :is-disabled="false"
             @message-submitted="handleSubmit($event)"

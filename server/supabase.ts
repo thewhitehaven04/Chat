@@ -20,7 +20,7 @@ export type Database = {
                 Insert: {
                     chat_id: number
                     id?: string
-                    submitted_at: string
+                    submitted_at?: string
                     submitted_by?: string | null
                     submitter: Database['public']['Enums']['ai_chat_submitters']
                     text: string
@@ -38,7 +38,7 @@ export type Database = {
                         foreignKeyName: 'ai_chat_messages_chat_id_fkey'
                         columns: ['chat_id']
                         isOneToOne: false
-                        referencedRelation: 'chat_rooms'
+                        referencedRelation: 'ai_chat_rooms'
                         referencedColumns: ['id']
                     },
                     {

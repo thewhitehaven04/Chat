@@ -9,7 +9,7 @@ export default defineEventHandler(async (evt) => {
     )
     if (!error) {
         await evt.context.aiChat.setExistingChat(Number(chatId))
-        return sendStream(evt, await evt.context.aiChat.sendMessage(data?.message))
+        return (await evt.context.aiChat.sendMessage(data?.message)) as ReadableStream<string>
     }
     createError({
         statusCode: 400,
