@@ -66,29 +66,34 @@ export class AiChatService implements IAiChatService {
 
             const processModelMessage = async (
                 result: ReadableStreamReadResult<string>
-            ): Promise<void> => {
+            ): Promise<boolean> => {
                 if (result.value) {
                     text += result.value
                 }
                 if (result.done && this.#chatRoomId) {
-                    await this.#chatRepository.storeModelMessage({
-                        chatRoomId: this.#chatRoomId,
-                        message: text
-                    })
-                    return
+                    return true
                 }
 
                 return reader.read().then(processModelMessage)
             }
 
-            reader.read().then(processModelMessage)
+            reader
+                .read()
+                .then(processModelMessage)
+                .then(async (res) => {
+                    if (res && this.#chatRoomId) {
+                        await this.#chatRepository.storeModelMessage({
+                            chatRoomId: this.#chatRoomId,
+                            message: text
+                        })
+                    }
+                })
 
             await this.#chatRepository.storeUserMessage({
                 message: message,
                 chatRoomId: this.#chatRoomId
             })
         } else throw new DomainError('Chat room is not set')
-
         return responseStream
     }
 

@@ -20,11 +20,22 @@ watch(chatMessages, (chatMessages) => {
     }
 })
 
+// initial scroll
+watch(
+    chatMessages,
+    () => {
+        scrollToBottom()
+    },
+    {
+        once: true
+    }
+)
+
 const scrollToBottom = () => {
     requestAnimationFrame(() => {
         if (scrollTarget.value) {
             scrollTarget.value.scroll({
-                behavior: 'smooth',
+                behavior: 'instant',
                 top: scrollTarget.value.scrollHeight
             })
         }
@@ -42,14 +53,13 @@ const handleSubmit = async (message: string) => {
     scrollToBottom()
 
     const reader = (
-        await $fetch<ReadableStream<string>>(`/api/ai-chat/${route.params.roomId}/message`, {
+        await $fetch<ReadableStream<Uint8Array>>(`/api/ai-chat/${route.params.roomId}/message`, {
             method: 'POST',
             responseType: 'stream',
-            body: {
-                message
-            }
+            body: { message }
         })
     ).getReader()
+    const decoder = new TextDecoder('utf-8')
 
     pendingModelResponse.value = {
         date: new Date(),
@@ -59,7 +69,7 @@ const handleSubmit = async (message: string) => {
     let nextChunk = await reader.read()
     scrollToBottom()
     while (!nextChunk.done) {
-        pendingModelResponse.value.message += nextChunk.value
+        pendingModelResponse.value.message += decoder.decode(nextChunk.value)
         nextChunk = await reader.read()
     }
 
