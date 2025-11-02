@@ -5,9 +5,8 @@ export const useThrottledFn = (fn: () => void, timeout_: number) => {
         const execTime = Date.now()
 
         if (execTime - lastExecuted > timeout_) {
-            const res = fn()
             lastExecuted = execTime
-            return res
+            return fn()
         }
     }
 }

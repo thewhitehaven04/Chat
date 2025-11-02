@@ -9,6 +9,11 @@ export interface IAIChatMessageDto extends IAIChatMessageInputDto {
     date: string
 }
 
+export interface IAIChatMessageHistoryDto {
+    messages: IAIChatMessageDto[]
+    hasMore: boolean
+}
+
 export interface IAIChatRoomCreateDto {
     name: string
 }

@@ -98,7 +98,6 @@ onMounted(() => {
         },
         {
             root: chatRef.value,
-            threshold: 0.3
         }
     )
 })

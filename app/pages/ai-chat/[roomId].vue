@@ -1,22 +1,34 @@
 <script setup lang="ts">
 import type { IChatMessageProps } from '~/modules/ai-chat/features/types'
+import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
+import { v4 as uuidv4 } from 'uuid'
 const route = useRoute()
 
-const { data: chatMessages, refresh } = useFetch(`/api/ai-chat/${route.params.roomId}/history`)
-const messages = ref<(IChatMessageProps & { id: string })[]>([])
-const pendingModelResponse = ref<IChatMessageProps | null>(null)
-const lastUserRequest = ref<IChatMessageProps | null>(null)
+const skip = ref(0)
 
+const { data: chatMessages, pending: isHistoryLoading } = useFetch(
+    `/api/ai-chat/${route.params.roomId}/history`,
+    {
+        query: {
+            skip: skip,
+            count: 30
+        }
+    }
+)
+
+const messages = ref<(IChatMessageProps & { id: string })[]>([])
 const isWaitingForResponse = ref(false)
 
 watch(chatMessages, (chatMessages) => {
     if (chatMessages) {
-        messages.value = chatMessages?.data.map((message) => ({
-            message: message.message,
-            type: message.submitter,
-            id: message.id,
-            date: new Date(message.date)
-        }))
+        messages.value.unshift(
+            ...chatMessages.messages.map((message) => ({
+                message: message.message,
+                type: message.submitter,
+                id: message.id,
+                date: new Date(message.date)
+            }))
+        )
     }
 })
 
@@ -45,41 +57,92 @@ const scrollToBottom = () => {
 const handleSubmit = async (message: string) => {
     isWaitingForResponse.value = true
 
-    lastUserRequest.value = {
+    const optimisticUserMessage = {
+        id: uuidv4(),
         date: new Date(),
         message: message,
-        type: 'user'
-    }
-    scrollToBottom()
-
-    const reader = (
-        await $fetch<ReadableStream<Uint8Array>>(`/api/ai-chat/${route.params.roomId}/message`, {
-            method: 'POST',
-            responseType: 'stream',
-            body: { message }
-        })
-    ).getReader()
-    const decoder = new TextDecoder('utf-8')
-
-    pendingModelResponse.value = {
-        date: new Date(),
-        message: '',
-        type: 'model'
-    }
-    let nextChunk = await reader.read()
-    scrollToBottom()
-    while (!nextChunk.done) {
-        pendingModelResponse.value.message += decoder.decode(nextChunk.value)
-        nextChunk = await reader.read()
+        type: 'user' as const
     }
 
-    requestAnimationFrame(async () => {
-        await refresh()
-        lastUserRequest.value = null
-        pendingModelResponse.value = null
+    await $fetch<ReadableStream<Uint8Array>>(`/api/ai-chat/${route.params.roomId}/message`, {
+        method: 'POST',
+        responseType: 'stream',
+        body: { message },
+        onRequest: () => {
+            messages.value.push(optimisticUserMessage)
+            scrollToBottom()
+        },
+        onResponseError: () => {
+            messages.value = messages.value.filter((m) => m.id !== optimisticUserMessage.id)
+        },
+        onResponse: async (response) => {
+            if (!response.error) {
+                const reader = response.response.body?.getReader()
+
+                messages.value.push({
+                    id: uuidv4(),
+                    date: new Date(),
+                    message: '',
+                    type: 'model' as const
+                })
+                scrollToBottom()
+                const incomingMessage = messages.value.at(-1)
+                const decoder = new TextDecoder('utf-8')
+                if (reader && incomingMessage) {
+                    let nextChunk = await reader.read()
+                    scrollToBottom()
+                    while (!nextChunk.done) {
+                        incomingMessage.message += decoder.decode(nextChunk.value)
+                        nextChunk = await reader.read()
+                    }
+                }
+            }
+        }
     })
 }
 const scrollTarget = useTemplateRef('scrollingContainer')
+const firstMessageRef = useTemplateRef('firstMessage')
+
+const handleLoadMore = useThrottledFn(() => {
+    if (!isHistoryLoading.value && chatMessages.value?.hasMore) {
+        skip.value += 30
+    }
+}, 1000)
+
+let intersectionObserver: IntersectionObserver
+
+onMounted(() => {
+    intersectionObserver = new IntersectionObserver(
+        () => {
+            handleLoadMore()
+        },
+        {
+            root: scrollTarget.value
+        }
+    )
+})
+
+onUnmounted(() => {
+    intersectionObserver.disconnect()
+})
+
+const firstMessage = computed(() => messages.value[0])
+const remainingMessages = computed(() => messages.value.slice(1) || [])
+
+watch(
+    firstMessageRef,
+    (current, previous) => {
+        if (previous?.container) {
+            intersectionObserver.unobserve(previous.container)
+        }
+        if (current?.container) {
+            intersectionObserver.observe(current.container)
+        }
+    },
+    {
+        flush: 'post'
+    }
+)
 </script>
 
 <template>
@@ -89,23 +152,18 @@ const scrollTarget = useTemplateRef('scrollingContainer')
             class="flex-1 flex flex-col items-stretch w-full gap-4 overflow-y-scroll"
         >
             <AiChatFeaturesChatMessage
-                v-for="message in messages"
+                v-if="!!firstMessage"
+                ref="firstMessage"
+                :date="firstMessage.date"
+                :type="firstMessage.type"
+                :message="firstMessage.message"
+            />
+            <AiChatFeaturesChatMessage
+                v-for="message in remainingMessages"
                 :key="message.id"
                 :date="message.date"
                 :type="message.type"
                 :message="message.message"
-            />
-            <AiChatFeaturesChatMessage
-                v-if="!!lastUserRequest"
-                :date="lastUserRequest.date"
-                :type="lastUserRequest.type"
-                :message="lastUserRequest.message"
-            />
-            <AiChatFeaturesChatMessage
-                v-if="!!pendingModelResponse"
-                :date="pendingModelResponse.date"
-                :type="pendingModelResponse.type"
-                :message="pendingModelResponse.message"
             />
         </div>
         <ChatFeaturesMessageSubmissionForm

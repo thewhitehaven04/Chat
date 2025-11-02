@@ -1,5 +1,6 @@
 import type {
     IAIChatMessageDto,
+    IAIChatMessageHistoryDto,
     IAIChatMessageInputDto,
     IAIChatRoomCreateDto,
     IAIChatRoomDto
@@ -21,7 +22,11 @@ export interface IAiChatService {
     sendMessage(message: string): Promise<ReadableStream<string>>
     getMessage(messageId: string): Promise<IAIChatMessageDto>
     setExistingChat(chatId: number): Promise<void>
-    getChatHistory(chatId: number): Promise<{ data: IAIChatMessageDto[]; count: number | null }>
+    getChatHistory(
+        chatId: number,
+        skip: number,
+        limit: number
+    ): Promise<IAIChatMessageHistoryDto>
 }
 
 export interface IAIChatRoomsRepository {

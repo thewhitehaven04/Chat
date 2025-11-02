@@ -10,7 +10,7 @@ export class AiChatService implements IAiChatService {
     #chatRepository: IAIChatMessageRepository
     #chatRoomId: number | null
 
-    static CHAT_WINDOW = 1000
+    static CHAT_WINDOW = 30
 
     constructor(
         adapter: IAIChatAdapter,
@@ -97,8 +97,10 @@ export class AiChatService implements IAiChatService {
         return responseStream
     }
 
-    async getChatHistory(chatId: number) {
-        return await this.#chatRepository.getChatHistory(chatId, 0, AiChatService.CHAT_WINDOW)
+    async getChatHistory(chatId: number, skip: number, limit: number) {
+        const history = await this.#chatRepository.getChatHistory(chatId, skip, limit)
+        const hasMore = (history.count || 0) > skip + limit
+        return { messages: history.data, hasMore }
     }
 
     async getMessage(messageId: string) {
