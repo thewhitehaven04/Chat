@@ -114,8 +114,12 @@ let intersectionObserver: IntersectionObserver
 
 onMounted(() => {
     intersectionObserver = new IntersectionObserver(
-        () => {
-            handleLoadMore()
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    handleLoadMore()
+                }
+            })
         },
         {
             root: scrollTarget.value
