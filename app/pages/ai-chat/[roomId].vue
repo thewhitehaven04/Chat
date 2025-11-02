@@ -2,6 +2,7 @@
 import type { IChatMessageProps } from '~/modules/ai-chat/features/types'
 import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 import { v4 as uuidv4 } from 'uuid'
+
 const route = useRoute()
 
 const skip = ref(0)
@@ -17,7 +18,7 @@ const { data: chatMessages, pending: isHistoryLoading } = useFetch(
 )
 
 const messages = ref<(IChatMessageProps & { id: string })[]>([])
-const isWaitingForResponse = ref(false)
+const isChatPending = computed(() => isHistoryLoading.value && !chatMessages.value)
 
 watch(chatMessages, (chatMessages) => {
     if (chatMessages) {
@@ -55,8 +56,6 @@ const scrollToBottom = () => {
 }
 
 const handleSubmit = async (message: string) => {
-    isWaitingForResponse.value = true
-
     const optimisticUserMessage = {
         id: uuidv4(),
         date: new Date(),
@@ -85,7 +84,9 @@ const handleSubmit = async (message: string) => {
                     message: '',
                     type: 'model' as const
                 })
+
                 scrollToBottom()
+
                 const incomingMessage = messages.value.at(-1)
                 const decoder = new TextDecoder('utf-8')
                 if (reader && incomingMessage) {
@@ -104,7 +105,7 @@ const scrollTarget = useTemplateRef('scrollingContainer')
 const firstMessageRef = useTemplateRef('firstMessage')
 
 const handleLoadMore = useThrottledFn(() => {
-    if (!isHistoryLoading.value && chatMessages.value?.hasMore) {
+    if (!isHistoryLoading.value && chatMessages.value?.hasMore && !isChatPending.value) {
         skip.value += 30
     }
 }, 1000)
@@ -132,11 +133,11 @@ const remainingMessages = computed(() => messages.value.slice(1) || [])
 watch(
     firstMessageRef,
     (current, previous) => {
-        if (previous?.container) {
-            intersectionObserver.unobserve(previous.container)
-        }
         if (current?.container) {
             intersectionObserver.observe(current.container)
+        }
+        if (previous?.container) {
+            intersectionObserver.unobserve(previous.container)
         }
     },
     {
