@@ -34,6 +34,16 @@ onMounted(() => {
     )
 })
 
+watch(
+    messages.value,
+    () => {
+        scrollToBottom()
+    },
+    {
+        once: true
+    }
+)
+
 onUnmounted(() => {
     intersectionObserver.disconnect()
 })

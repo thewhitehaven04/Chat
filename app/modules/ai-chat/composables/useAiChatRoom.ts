@@ -21,7 +21,6 @@ export function useAiChatRoom(onRequest: () => void) {
 
     watch(chatMessages, (chatMessages) => {
         if (chatMessages) {
-            console.log(chatMessages)
             messages.value.unshift(
                 ...chatMessages.messages.map((message) => ({
                     message: message.message,
