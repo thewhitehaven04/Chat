@@ -4,25 +4,18 @@ import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 
 const params = useRoute().params
 
-const skip = ref(0)
-
 let observer: IntersectionObserver | null
 
-const { data, pending } = useFetch(`/api/chat/${params.roomId}/history`, {
-    query: {
-        limit: 30,
-        skip: skip
-    },
-})
-
-watch(data, (response) => {
-    prependMessages(response?.messageGroups || [])
-})
-
-const isChatHistoryLoading = computed(() => pending.value && !data.value)
 const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 
-const { sendMessage, messages, isDisconnected, prependMessages } = useChatHistory({
+const {
+    sendMessage,
+    messages,
+    isDisconnected,
+    chatHistory,
+    isChatHistoryLoading,
+    loadMoreHistory
+} = useChatHistory({
     onNewMessage: () => scrollToBottom(),
     onPrepend: () => {
         const scrollHeight = chatRef.value?.scrollHeight || 0
@@ -40,6 +33,17 @@ const { sendMessage, messages, isDisconnected, prependMessages } = useChatHistor
 const firstMessage = computed(() => messages.value[0])
 const remainingMessages = computed(() => messages.value.slice(1))
 
+// initial scroll
+watch(
+    messages,
+    () => {
+        scrollToBottom()
+    },
+    {
+        once: true
+    }
+)
+
 const scrollToBottom = () => {
     requestAnimationFrame(() => {
         if (chatRef.value) {
@@ -52,9 +56,7 @@ const scrollToBottom = () => {
 }
 
 const handleLoadMore = useThrottledFn(() => {
-    if (!isChatHistoryLoading.value) {
-        skip.value += 30
-    }
+    loadMoreHistory()
 
     if (observer && firstMessageRef.value?.containerRef) {
         observer.unobserve(firstMessageRef.value.containerRef)
@@ -79,7 +81,7 @@ watch(
 onMounted(() => {
     observer = new IntersectionObserver(
         (entries) => {
-            if (data.value?.hasMore && entries[0] && entries[0].isIntersecting) {
+            if (chatHistory.value?.hasMore && entries[0] && entries[0].isIntersecting) {
                 handleLoadMore()
             }
         },
@@ -102,9 +104,9 @@ onUnmounted(() => {
             <template #left>
                 <div class="flex flex-col gap-2 mb-4">
                     <h1 v-if="!isChatHistoryLoading" class="text-xl font-bold">
-                        {{ data?.chat.name }}
+                        {{ chatHistory?.chat.name }}
                     </h1>
-                    <p class="text-neutral-700">{{ data?.chat.description }}</p>
+                    <p class="text-neutral-700">{{ chatHistory?.chat.description }}</p>
                 </div>
             </template>
             <template #right>

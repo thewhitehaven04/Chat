@@ -1,7 +1,8 @@
 import type { IChatMessageProps } from '~/modules/ai-chat/features/types'
 import { v4 as uuidv4 } from 'uuid'
+import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 
-export function useAiChatRoom(scrollToBottom: () => void, onInfiniteScroll: () => void) {
+export function useAiChatRoom(onRequest: () => void) {
     const route = useRoute()
     const skip = ref(0)
 
@@ -20,6 +21,7 @@ export function useAiChatRoom(scrollToBottom: () => void, onInfiniteScroll: () =
 
     watch(chatMessages, (chatMessages) => {
         if (chatMessages) {
+            console.log(chatMessages)
             messages.value.unshift(
                 ...chatMessages.messages.map((message) => ({
                     message: message.message,
@@ -31,16 +33,12 @@ export function useAiChatRoom(scrollToBottom: () => void, onInfiniteScroll: () =
         }
     })
 
-    // initial scroll
-    watch(
-        chatMessages,
-        () => {
-            scrollToBottom()
-        },
-        {
-            once: true
+    const handleLoadMore = useThrottledFn(() => {
+        if (!isHistoryLoading.value && chatMessages.value?.hasMore) {
+            skip.value += 30
         }
-    )
+    }, 1000)
+    
 
     const handleSubmit = async (message: string) => {
         const optimisticUserMessage = {
@@ -56,7 +54,7 @@ export function useAiChatRoom(scrollToBottom: () => void, onInfiniteScroll: () =
             body: { message },
             onRequest: () => {
                 messages.value.push(optimisticUserMessage)
-                scrollToBottom()
+                onRequest()
             },
             onResponseError: () => {
                 messages.value = messages.value.filter((m) => m.id !== optimisticUserMessage.id)
@@ -72,13 +70,13 @@ export function useAiChatRoom(scrollToBottom: () => void, onInfiniteScroll: () =
                         type: 'model' as const
                     })
 
-                    scrollToBottom()
+                    onRequest()
 
                     const incomingMessage = messages.value.at(-1)
                     const decoder = new TextDecoder('utf-8')
                     if (reader && incomingMessage) {
                         let nextChunk = await reader.read()
-                        scrollToBottom()
+                        onRequest()
                         while (!nextChunk.done) {
                             incomingMessage.message += decoder.decode(nextChunk.value)
                             nextChunk = await reader.read()
@@ -87,13 +85,6 @@ export function useAiChatRoom(scrollToBottom: () => void, onInfiniteScroll: () =
                 }
             }
         })
-    }
-
-    const handleLoadMore = () => {
-        if (!isHistoryLoading.value && chatMessages.value?.hasMore && !isChatPending.value) {
-            skip.value += 30
-            onInfiniteScroll()
-        }
     }
 
     return {

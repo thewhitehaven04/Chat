@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 import { useAiChatRoom } from '~/modules/ai-chat/composables/useAiChatRoom'
 
 const scrollTarget = useTemplateRef('scrollingContainer')
@@ -16,14 +15,7 @@ const scrollToBottom = () => {
     })
 }
 
-const handleLoadMoreThrottled = useThrottledFn(() => {
-    handleLoadMore()
-}, 1000)
-
-const { messages, handleSubmit, handleLoadMore } = useAiChatRoom(
-    scrollToBottom,
-    handleLoadMoreThrottled
-)
+const { messages, handleSubmit, handleLoadMore } = useAiChatRoom(scrollToBottom)
 
 let intersectionObserver: IntersectionObserver
 
@@ -32,7 +24,7 @@ onMounted(() => {
         (entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    handleLoadMoreThrottled()
+                    handleLoadMore()
                 }
             })
         },
@@ -67,25 +59,29 @@ watch(
 
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
-        <div
+        <ul
             ref="scrollingContainer"
             class="flex-1 flex flex-col items-stretch w-full gap-4 overflow-y-scroll"
         >
-            <AiChatFeaturesChatMessage
-                v-if="!!firstMessage"
-                ref="firstMessage"
-                :date="firstMessage.date"
-                :type="firstMessage.type"
-                :message="firstMessage.message"
-            />
-            <AiChatFeaturesChatMessage
-                v-for="message in remainingMessages"
-                :key="message.id"
-                :date="message.date"
-                :type="message.type"
-                :message="message.message"
-            />
-        </div>
+            <li>
+                <AiChatFeaturesChatMessage
+                    v-if="!!firstMessage"
+                    ref="firstMessage"
+                    :date="firstMessage.date"
+                    :type="firstMessage.type"
+                    :message="firstMessage.message"
+                />
+            </li>
+            <li>
+                <AiChatFeaturesChatMessage
+                    v-for="message in remainingMessages"
+                    :key="message.id"
+                    :date="message.date"
+                    :type="message.type"
+                    :message="message.message"
+                />
+            </li>
+        </ul>
         <ChatFeaturesMessageSubmissionForm
             :is-disabled="false"
             @message-submitted="handleSubmit($event)"

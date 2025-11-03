@@ -20,7 +20,7 @@ defineExpose<{
                 <p>{{ $props.message }}</p>
             </div>
         </div>
-        <div class="flex flex-row justify-start w-full">
+        <div v-else class="flex flex-row justify-start w-full">
             <div
                 class="bg-neutral-100 rounded-lg p-4 max-w-3xl w-max"
                 v-html="markdown.render($props.message)"

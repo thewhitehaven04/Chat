@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import type {
     IChatMessageGroup,
     IIncomingMessagePayload
@@ -16,6 +16,31 @@ export function useChatHistory(options: UseChatOptions) {
     const messages = ref<IChatMessageGroup[]>([])
     const isDisconnected = ref(false)
     let connection: WebSocket | null = null
+
+    const skip = ref(0)
+    const { data: chatHistory, pending: isChatHistoryPending } = useFetch(
+        `/api/chat/${chatRoomId}/history`,
+        {
+            query: {
+                limit: 30,
+                skip: skip
+            }
+        }
+    )
+
+    watch(chatHistory, (response) => {
+        if (response?.messageGroups) {
+            prependMessages(response.messageGroups)
+        }
+    })
+
+    const isChatHistoryLoading = computed(() => isChatHistoryPending.value && !chatHistory.value)
+
+    const loadMoreHistory = () => {
+        if (!isChatHistoryLoading.value) {
+            skip.value += 30
+        }
+    }
 
     const sendMessage = (message: string) => {
         if (connection && connection.readyState === WebSocket.OPEN) {
@@ -98,9 +123,11 @@ export function useChatHistory(options: UseChatOptions) {
     })
 
     return {
-        messages: messages,
+        messages,
         isDisconnected,
         sendMessage,
-        prependMessages
+        chatHistory,
+        isChatHistoryLoading,
+        loadMoreHistory
     }
 }
