@@ -14,11 +14,8 @@ export default defineEventHandler(async (event) => {
     if (chatCreateDto.success) {
         return await event.context.chatRooms.createChatRoom(chatCreateDto.data)
     }
-    sendError(
-        event,
-        createError({
-            statusCode: 400,
-            statusMessage: chatCreateDto.error.message
-        })
-    )
+    throw createError({
+        statusCode: 400,
+        statusMessage: chatCreateDto.error.message
+    })
 })

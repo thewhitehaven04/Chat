@@ -3,7 +3,8 @@ import type {
     IAIChatMessageHistoryDto,
     IAIChatMessageInputDto,
     IAIChatRoomCreateDto,
-    IAIChatRoomDto
+    IAIChatRoomDto,
+    IAICreateChatResponseDto
 } from './models/types'
 
 export interface IAIChatMessageRepository {
@@ -18,7 +19,7 @@ export interface IAIChatMessageRepository {
 }
 
 export interface IAiChatService {
-    createChat(): Promise<{ chatId: number }>
+    createChat(initialMessage: string): Promise<IAICreateChatResponseDto>
     sendMessage(message: string): Promise<ReadableStream<string>>
     getMessage(messageId: string): Promise<IAIChatMessageDto>
     setExistingChat(chatId: number): Promise<void>

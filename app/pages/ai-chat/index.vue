@@ -11,12 +11,14 @@ const handleSubmit = async (message: string) => {
     sentMessage.value = message
     const chatCreationResponse = await $fetch('/api/ai-chat', {
         method: 'POST',
+        body: { message },
         onResponse: ({ error }) => {
             if (!error) {
                 refresh()
             }
         }
     })
+
     await $fetch(`/api/ai-chat/${chatCreationResponse.chatId}/message`, {
         method: 'POST',
         body: { message }

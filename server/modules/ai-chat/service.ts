@@ -1,5 +1,4 @@
 import type { IAIChatAdapter } from '../chat-adapter/types'
-import { format } from 'date-fns'
 import type { IAIChatMessageRepository, IAIChatRoomsRepository, IAiChatService } from './types'
 import type { IContentInstance } from '../chat-adapter/models/types'
 import { DomainError } from '~~/server/shared/DomainError'
@@ -23,18 +22,17 @@ export class AiChatService implements IAiChatService {
         this.#chatRoomId = null
     }
 
-    async createChat() {
+    async createChat(initialMessage: string) {
+        const summary = await this.#adapter.sendMessage(
+            `Summarize the following user request in a short sentence (max 10 words): "${initialMessage}"`
+        )
+
         const chatRoom = await this.#chatRoomRepository.createChatRoom({
-            name: `test-${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}`
+            name: summary
         })
 
-        if (chatRoom) {
-            this.#chatRoomId = chatRoom.id
-        }
-
         this.#adapter.createChatSession([])
-
-        return { chatId: chatRoom.id, name: chatRoom.name, createdBy: chatRoom.createdBy }
+        return { chatId: chatRoom.id, name: chatRoom.name, createdBy: chatRoom.createdBy, summary }
     }
 
     async setExistingChat(chatId: number) {
@@ -57,7 +55,7 @@ export class AiChatService implements IAiChatService {
     }
 
     async sendMessage(message: string) {
-        const response = this.#adapter.sendMessage(message)
+        const response = this.#adapter.sendMessageStreaming(message)
         const [messageStream, responseStream] = response.tee()
 
         if (this.#chatRoomId) {

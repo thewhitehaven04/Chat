@@ -6,6 +6,7 @@ import type { IContentInstance } from './models/types'
 export class GeminiChatAdapter implements IAIChatAdapter {
     #client: GoogleGenAI
     #chat: Chat | null
+    static SERVICE_MODEL = 'gemini-2.5-flash'
 
     constructor() {
         const apiKey = useRuntimeConfig().aiApiKey
@@ -17,7 +18,7 @@ export class GeminiChatAdapter implements IAIChatAdapter {
         this.#chat = this.#client.chats.create({ model: 'gemini-2.5-flash', history })
     }
 
-    sendMessage(text: string) {
+    sendMessageStreaming(text: string) {
         if (this.#chat === null) throw new DomainError('Chat session is not initialized')
 
         const stream = this.#chat.sendMessageStream({
@@ -48,5 +49,16 @@ export class GeminiChatAdapter implements IAIChatAdapter {
             .map((c) => (c.parts ? this.#getPartsTextContent(c.parts) : null))
             .filter(Boolean)
         return messages
+    }
+
+    async sendMessage(text: string): Promise<string> {
+        const result = await this.#client.models.generateContent({
+            contents: [{ role: 'user', parts: [{ text }] }],
+            model: GeminiChatAdapter.SERVICE_MODEL
+        })
+        if (!result.text) {
+            throw new DomainError('AI adapter did not return a text response.')
+        }
+        return result.text 
     }
 }

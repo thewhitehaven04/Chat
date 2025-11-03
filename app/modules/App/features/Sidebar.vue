@@ -48,6 +48,16 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
                         >Chat with AI</UButton
                     >
                 </template>
+                <template #item-content="{ item, active }">
+                    <Transition appear name="fade">
+                        <UButton
+                            variant="ghost"
+                            :to="item.to"
+                            :color="active ? 'primary' : 'info'"
+                            >{{ item.label }}</UButton
+                        >
+                    </Transition>
+                </template>
             </UNavigationMenu>
         </template>
         <template #footer>
@@ -63,3 +73,15 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
         </template>
     </UDashboardSidebar>
 </template>
+
+<style lang="css" scoped>
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+    opacity: 1;
+}
+</style>
