@@ -24,7 +24,7 @@ export class AiChatService implements IAiChatService {
 
     async createChat(initialMessage: string) {
         const summary = await this.#adapter.sendMessage(
-            `Summarize the following user request in a short sentence (max 10 words): "${initialMessage}"`
+            `Summarize the following user request in a short sentence (max 6 words): "${initialMessage}. Prefer noun phrases."`
         )
 
         const chatRoom = await this.#chatRoomRepository.createChatRoom({

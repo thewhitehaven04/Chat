@@ -48,15 +48,8 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
                         >Chat with AI</UButton
                     >
                 </template>
-                <template #item-content="{ item, active }">
-                    <Transition appear name="fade">
-                        <UButton
-                            variant="ghost"
-                            :to="item.to"
-                            :color="active ? 'primary' : 'info'"
-                            >{{ item.label }}</UButton
-                        >
-                    </Transition>
+                <template #item="{ item }">
+                    <ULink :to="item.to" class="appear-animation">{{ item.label }} </ULink>
                 </template>
             </UNavigationMenu>
         </template>
@@ -75,13 +68,20 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
 </template>
 
 <style lang="css" scoped>
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
+.appear-animation {
+    animation-name: appear;
+    animation-duration: 0.2s;
+    animation-timing-function: ease-in-out;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
 
-.fade-enter-to,
-.fade-leave-from {
-    opacity: 1;
+    @keyframes appear {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
 }
 </style>

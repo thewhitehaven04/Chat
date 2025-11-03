@@ -32,7 +32,12 @@ const handleSubmit = async (message: string) => {
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
         <UContainer class="flex-1">
-            <p v-if="!!sentMessage">{{ sentMessage }}</p>
+            <AiChatFeaturesChatMessage
+                v-if="!!sentMessage"
+                :date="new Date()"
+                :type="'user'"
+                :message="sentMessage"
+            />
             <UContainer
                 v-else-if="!!aiChatRooms?.length"
                 class="flex flex-col items-center justify-center"

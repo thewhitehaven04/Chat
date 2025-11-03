@@ -6,12 +6,13 @@ import {
 } from '~~/shared/modules/profile/models/validation'
 const isEditing = ref(false)
 
-const { data: profile } = useFetch('/api/profile', {
-    key: 'profile',
-    onResponse: ({ response, error }) => {
-        if (!error && response._data) {
-            formState.name = response._data.name
-        }
+const { data: profile, refresh } = useFetch('/api/profile', {
+    key: 'profile'
+})
+
+watch(profile, () => {
+    if (profile.value) {
+        formState.name = profile.value.name
     }
 })
 
@@ -39,6 +40,7 @@ const handleSubmit = async ({ data }: FormSubmitEvent<TProfileUpdateDto>) => {
         onResponse: ({ error }) => {
             if (!error) {
                 toggleEdit()
+                refresh()
             }
         }
     })
