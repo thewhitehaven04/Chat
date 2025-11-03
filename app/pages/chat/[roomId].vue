@@ -1,24 +1,6 @@
 <script setup lang="ts">
-import z from 'zod'
 import { useChatHistory } from '~/modules/chat/composables/useChatHistory'
 import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
-import type { IChatMessageGroup } from '~~/server/modules/chat/models/types'
-
-definePageMeta({
-    validate(route) {
-        const roomId = route.params.roomId
-        const parse = z
-            .string()
-            .regex(/\d+/, {
-                error: 'Invalid room id'
-            })
-            .safeParse(roomId)
-        if (parse.success) {
-            return true
-        }
-        return { statusCode: 403, statusMessage: parse.error.message }
-    }
-})
 
 const params = useRoute().params
 
@@ -27,15 +9,14 @@ const skip = ref(0)
 let observer: IntersectionObserver | null
 
 const { data, pending } = useFetch(`/api/chat/${params.roomId}/history`, {
-    onResponse: ({ response, error }) => {
-        if (!error) {
-            prependMessages(response._data.messageGroups as IChatMessageGroup[])
-        }
-    },
     query: {
         limit: 30,
         skip: skip
-    }
+    },
+})
+
+watch(data, (response) => {
+    prependMessages(response?.messageGroups || [])
 })
 
 const isChatHistoryLoading = computed(() => pending.value && !data.value)
@@ -56,10 +37,16 @@ const { sendMessage, messages, isDisconnected, prependMessages } = useChatHistor
     chatRoomId: params.roomId as string
 })
 
+const firstMessage = computed(() => messages.value[0])
+const remainingMessages = computed(() => messages.value.slice(1))
+
 const scrollToBottom = () => {
     requestAnimationFrame(() => {
         if (chatRef.value) {
-            chatRef.value.scrollTop = chatRef.value.scrollHeight
+            chatRef.value.scroll({
+                behavior: 'instant',
+                top: chatRef.value.scrollHeight
+            })
         }
     })
 }
@@ -69,8 +56,8 @@ const handleLoadMore = useThrottledFn(() => {
         skip.value += 30
     }
 
-    if (observer && firstMessageRef.value) {
-        observer.unobserve(firstMessageRef.value)
+    if (observer && firstMessageRef.value?.containerRef) {
+        observer.unobserve(firstMessageRef.value.containerRef)
     }
 }, 1000)
 
@@ -80,8 +67,8 @@ const chatRef = useTemplateRef('chat')
 watch(
     [isChatHistoryLoading, firstMessageRef],
     () => {
-        if (firstMessageRef.value && observer) {
-            observer.observe(firstMessageRef.value)
+        if (firstMessageRef.value?.containerRef && observer) {
+            observer.observe(firstMessageRef.value.containerRef)
         }
     },
     {
@@ -92,12 +79,12 @@ watch(
 onMounted(() => {
     observer = new IntersectionObserver(
         (entries) => {
-            if (data.value?.hasMore && entries[0] && entries[0].intersectionRatio > 0.3) {
+            if (data.value?.hasMore && entries[0] && entries[0].isIntersecting) {
                 handleLoadMore()
             }
         },
         {
-            root: chatRef.value,
+            root: chatRef.value
         }
     )
 })
@@ -127,10 +114,17 @@ onUnmounted(() => {
         <div ref="chat" class="flex-1 overflow-y-scroll">
             <USkeleton v-if="isChatHistoryLoading" class="h-12 w-12 rounded-full" />
             <ul v-else>
-                <span ref="firstMessageThreshold" />
                 <li class="flex flex-col items-start justify-center flex-1 gap-8 w-full">
                     <ChatFeaturesMessageSequence
-                        v-for="m in messages"
+                        v-if="firstMessage"
+                        :id="firstMessage?.id"
+                        ref="firstMessageThreshold"
+                        :chat_room="firstMessage?.chat_room"
+                        :submitted_by="firstMessage?.submitted_by"
+                        :messages="firstMessage?.messages"
+                    />
+                    <ChatFeaturesMessageSequence
+                        v-for="m in remainingMessages"
                         :id="m.id"
                         :key="m.id"
                         :chat_room="m.chat_room"
