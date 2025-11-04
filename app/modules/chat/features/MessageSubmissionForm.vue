@@ -1,40 +1,23 @@
 <script setup lang="ts">
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { TChat } from '~/modules/chat/composables/useChat'
 
-defineProps<{
-    isDisabled: boolean
-}>()
-
-const emit = defineEmits<(e: 'message-submitted', value: string) => void>()
-const form = useTemplateRef('form')
-
-const formState = reactive({
-    message: ''
-})
-
-const handleSubmit = (evt: FormSubmitEvent<{ message: string }>) => {
-    emit('message-submitted', evt.data.message)
-    formState.message = ''
-}
-
+const chat = inject<TChat>('chat')
+const message = chat?.inputMessage
 const handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === 'Enter' && !event.shiftKey) {
-        form.value?.submit()
+        chat?.sendMessage()
     }
 }
 </script>
 
 <template>
-    <UForm ref="form" :state="formState" @submit="handleSubmit($event)">
-        <UFormField name="message">
-            <UTextarea
-                v-model="formState.message"
-                class="w-full"
-                placeholder="What do you think?"
-                :rows="4"
-                autoresize
-                @keyup="handleKeyUp($event)"
-            />
-        </UFormField>
-    </UForm>
+    <UTextarea
+        v-if="message"
+        v-model="message[0]"
+        class="w-full"
+        placeholder="What do you think?"
+        :rows="4"
+        autoresize
+        @keyup="handleKeyUp($event)"
+    />
 </template>

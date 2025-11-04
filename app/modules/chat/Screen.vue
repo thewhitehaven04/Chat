@@ -1,19 +1,12 @@
 <script setup lang="ts">
-import { useChatHistory } from '~/modules/chat/composables/useChatHistory'
+import { useChat } from '~/modules/chat/composables/useChat'
 import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 
 const props = defineProps<{ roomId: string }>()
 
 let observer: IntersectionObserver | null
 
-const {
-    sendMessage,
-    messages,
-    isDisconnected,
-    chatHistory,
-    isChatHistoryLoading,
-    loadMoreHistory
-} = useChatHistory({
+const chat = useChat({
     onNewMessage: () => scrollToBottom(),
     onPrepend: () => {
         const scrollHeight = chatRef.value?.scrollHeight || 0
@@ -27,6 +20,10 @@ const {
     },
     chatRoomId: props.roomId
 })
+
+const { messages, isDisconnected, chatHistory, isChatHistoryLoading, loadMoreHistory } = chat
+
+provide('chat', chat)
 
 const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 const firstMessage = computed(() => messages.value[0])
@@ -141,9 +138,6 @@ onUnmounted(() => {
         <div v-if="isDisconnected" class="flex flex-col text-white bg-red-300 font-bold text-lg">
             You've been disconnected
         </div>
-        <ChatFeaturesMessageSubmissionForm
-            :is-disabled="isChatHistoryLoading"
-            @message-submitted="sendMessage($event)"
-        />
+        <ChatFeaturesMessageSubmissionForm />
     </UContainer>
 </template>

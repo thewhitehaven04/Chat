@@ -5,17 +5,25 @@ import type {
     TSubscriptionPayload
 } from '~~/server/modules/chat/models/types'
 
-interface UseChatOptions {
+export type TChat = ReturnType<typeof useChat>
+
+export function useChat(options: {
     chatRoomId: string | string[]
     onNewMessage?: () => void
     onPrepend?: () => void
-}
-
-export function useChatHistory(options: UseChatOptions) {
+}) {
     const { chatRoomId, onNewMessage, onPrepend } = options
 
     const messages = ref<IChatMessageGroup[]>([])
     const isDisconnected = ref(false)
+
+    const editedMessage = ref<null | string>(null)
+    const inputMessage = defineModel('message', {
+        type: String,
+        default: '',
+        required: true
+    })
+
     let connection: WebSocket | null = null
 
     const skip = ref(0)
@@ -43,12 +51,38 @@ export function useChatHistory(options: UseChatOptions) {
         }
     }
 
-    const sendMessage = (message: string) => {
+    const sendMessage = () => {
+        if (connection && connection.readyState === WebSocket.OPEN) {
+            if (editedMessage.value) {
+                connection.send(
+                    JSON.stringify({
+                        action: 'edit',
+                        messageId: editedMessage.value,
+                        chatRoom: Number(chatRoomId),
+                        text: inputMessage.value
+                    })
+                )
+            } else {
+                connection.send(
+                    JSON.stringify({
+                        action: 'submit',
+                        chatRoom: Number(chatRoomId),
+                        text: inputMessage.value
+                    })
+                )
+            }
+        } else {
+            console.error('WebSocket is not connected.')
+            isDisconnected.value = true
+        }
+    }
+
+    const deleteMessage = (messageId: string) => {
         if (connection && connection.readyState === WebSocket.OPEN) {
             connection.send(
                 JSON.stringify({
-                    chatRoom: Number(chatRoomId),
-                    text: message
+                    action: 'delete',
+                    messageId
                 })
             )
         } else {
@@ -156,6 +190,9 @@ export function useChatHistory(options: UseChatOptions) {
     })
 
     return {
+        editedMessage,
+        inputMessage,
+        deleteMessage,
         messages,
         isDisconnected,
         sendMessage,
