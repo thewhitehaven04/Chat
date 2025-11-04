@@ -74,14 +74,17 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
     animation-timing-function: ease-in-out;
     animation-direction: normal;
     animation-fill-mode: forwards;
+    transform-origin: top center;
+}
 
-    @keyframes appear {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 </style>

@@ -4,6 +4,10 @@ import {
     profileUpdateValidation,
     type TProfileUpdateDto
 } from '~~/shared/modules/profile/models/validation'
+
+definePageMeta({
+    layout: 'authorized'
+})
 const isEditing = ref(false)
 
 const { data: profile, refresh } = useFetch('/api/profile', {
@@ -96,7 +100,7 @@ const getAvatarUrl = (file: File) => {
                                         ? getAvatarUrl(formState.avatar)
                                         : (profile?.avatarUrl ?? undefined)
                                 "
-                            >
+                            />
                             <div v-if="isEditing" class="flex flex-row gap-4">
                                 <UButton variant="soft" @click="open()">Upload</UButton>
                                 <UButton variant="soft" @click="removeFile()">Remove</UButton>

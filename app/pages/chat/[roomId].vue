@@ -2,11 +2,13 @@
 import { useChatHistory } from '~/modules/chat/composables/useChatHistory'
 import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 
+definePageMeta({
+    layout: 'authorized'
+})
+
 const params = useRoute().params
 
 let observer: IntersectionObserver | null
-
-const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 
 const {
     sendMessage,
@@ -30,6 +32,7 @@ const {
     chatRoomId: params.roomId as string
 })
 
+const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 const firstMessage = computed(() => messages.value[0])
 const remainingMessages = computed(() => messages.value.slice(1))
 

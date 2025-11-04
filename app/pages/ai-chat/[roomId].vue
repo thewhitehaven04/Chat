@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useAiChatRoom } from '~/modules/ai-chat/composables/useAiChatRoom'
 
+definePageMeta({
+    layout: 'authorized'
+})
+
 const scrollTarget = useTemplateRef('scrollingContainer')
 const firstMessageRef = useTemplateRef('firstMessage')
 

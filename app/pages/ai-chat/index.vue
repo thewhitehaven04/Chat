@@ -1,4 +1,9 @@
 <script setup lang="ts">
+definePageMeta({
+    layout: 'authorized'
+})
+
+
 const { data: aiChatRooms = [], refresh } = useFetch('/api/ai-chat/rooms', {
     key: 'aiChatRooms'
 })
@@ -29,6 +34,7 @@ const handleSubmit = async (message: string) => {
     })
 }
 </script>
+
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
         <UContainer class="flex-1">
@@ -40,13 +46,13 @@ const handleSubmit = async (message: string) => {
             />
             <UContainer
                 v-else-if="!!aiChatRooms?.length"
-                class="flex flex-col items-center justify-center"
+                class="flex flex-col items-center justify-center gap-4"
             >
                 <UButton
                     v-for="aiChatRoom in aiChatRooms"
                     :key="aiChatRoom.id"
                     variant="ghost"
-                    color="secondary"
+                    color="success"
                     size="lg"
                     :label="aiChatRoom.name"
                     :href="`/ai-chat/${aiChatRoom.id}`"
@@ -60,15 +66,3 @@ const handleSubmit = async (message: string) => {
         />
     </UContainer>
 </template>
-
-<style lang="css" scoped>
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
-.fade-enter-to,
-.fade-leave-from {
-    opacity: 1;
-}
-</style>
