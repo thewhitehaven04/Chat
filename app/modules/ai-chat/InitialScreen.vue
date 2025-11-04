@@ -41,20 +41,21 @@ const handleSubmit = async (message: string) => {
             />
             <UContainer
                 v-else-if="!!aiChatRooms?.length"
-                class="flex flex-col items-center justify-center w-min h-full gap-2"
+                class="flex flex-col justify-center w-min h-full gap-2"
             >
-            <h1 class="font-bold text-2xl mb-4">Hello, user.</h1>
-            <p class="font-medium text-neutral-500 text-sm self-start">Recent</p>
-                <UButton
-                    v-for="aiChatRoom in aiChatRooms"
-                    :key="aiChatRoom.id"
-                    variant="soft"
-                    color="neutral"
-                    size="lg"
-                    class="w-full"
-                    :label="aiChatRoom.name"
-                    :href="`/ai-chat/${aiChatRoom.id}`"
-                />
+                <div class="title-appear-animation w-full">
+                    <h1 class="font-bold text-2xl mb-4">Hello, user.</h1>
+                    <p class="font-medium text-neutral-500 text-sm self-start">Recent</p>
+                </div>
+                <div class="flex flex-col gap-3 entries-appear-animation">
+                    <ULink
+                        v-for="aiChatRoom in aiChatRooms"
+                        :key="aiChatRoom.id"
+                        class="w-max font-medium bg-inherit text-inherit"
+                        :href="`/ai-chat/${aiChatRoom.id}`"
+                        >{{ aiChatRoom.name }}</ULink
+                    >
+                </div>
             </UContainer>
             <p v-else class="text-lg font-md">You haven't started chatting yet</p>
         </UContainer>
@@ -64,3 +65,38 @@ const handleSubmit = async (message: string) => {
         />
     </UContainer>
 </template>
+
+<style lang="css">
+.title-appear-animation {
+    animation: title-appear 0.2s ease-in-out 0s normal forwards;
+    transform-origin: top center;
+}
+
+.entries-appear-animation {
+    animation: entries-appear 0.8s ease-in-out 0s normal forwards;
+    background: linear-gradient(180deg, var(--text-color-muted), var(--text-color-muted) 33.33%, white 66.66%);
+    color: transparent;
+    background-clip: text;
+    background-size: auto 300%;
+}
+
+@keyframes entries-appear {
+    from {
+        background-position: bottom;
+    }
+    to {
+        background-position: top;
+    }
+}
+
+@keyframes title-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+</style>
