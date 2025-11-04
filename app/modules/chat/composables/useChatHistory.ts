@@ -1,7 +1,8 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import type {
     IChatMessageGroup,
-    IIncomingMessagePayload
+    IIncomingMessagePayload,
+    TSubscriptionPayload
 } from '~~/server/modules/chat/models/types'
 
 interface UseChatOptions {
@@ -69,6 +70,51 @@ export function useChatHistory(options: UseChatOptions) {
         onPrepend?.()
     }
 
+    const onDelete = (messageId: string) => {
+        const groups = messages.value.map((group) => {
+            group.messages = group.messages.filter((message) => message.id !== messageId)
+            return group
+        })
+
+        return groups.filter((group) => group.messages.length > 0)
+    }
+
+    const onUpdate = (message: IIncomingMessagePayload) => {
+        for (const group of messages.value) {
+            for (const msg of group.messages) {
+                msg.text = message.text
+            }
+        }
+    }
+
+    const onInsert = (message: IIncomingMessagePayload) => {
+        const currentSequence = messages.value.at(-1)
+        if (message.id === currentSequence?.submitted_by.id) {
+            currentSequence.messages.push({
+                id: message.id,
+                text: message.text,
+                submitted_at: message.submitted_at
+            })
+        } else {
+            messages.value.push({
+                chat_room: message.chat_room,
+                id: message.id,
+                messages: [
+                    {
+                        id: message.id,
+                        submitted_at: message.submitted_at,
+                        text: message.text
+                    }
+                ],
+                submitted_by: {
+                    id: message.submitted_by.id,
+                    name: message.submitted_by.name,
+                    avatarUrl: message.submitted_by.avatarUrl
+                }
+            })
+        }
+    }
+
     onMounted(() => {
         connection = new WebSocket(`ws://${location.host}/api/chat`)
 
@@ -78,31 +124,18 @@ export function useChatHistory(options: UseChatOptions) {
 
         connection.addEventListener('message', (event: MessageEvent) => {
             try {
-                const message = JSON.parse(event.data) as IIncomingMessagePayload
-                const currentSequence = messages.value.at(-1)
-                if (message.submitted_by.id === currentSequence?.submitted_by.id) {
-                    currentSequence.messages.push({
-                        id: message.id,
-                        text: message.text,
-                        submitted_at: message.submitted_at
-                    })
-                } else {
-                    messages.value.push({
-                        chat_room: message.chat_room,
-                        id: message.id,
-                        messages: [
-                            {
-                                id: message.id,
-                                submitted_at: message.submitted_at,
-                                text: message.text
-                            }
-                        ],
-                        submitted_by: {
-                            id: message.submitted_by.id,
-                            name: message.submitted_by.name,
-                            avatarUrl: message.submitted_by.avatarUrl
-                        }
-                    })
+                const message = JSON.parse(event.data) as TSubscriptionPayload
+
+                if (message.action === 'delete') {
+                    onDelete(message.old.id || '')
+                }
+
+                if (message.action === 'update') {
+                    onUpdate(message.new)
+                }
+
+                if (message.action === 'insert') {
+                    onInsert(message.new)
                 }
 
                 onNewMessage?.()

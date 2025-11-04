@@ -26,12 +26,12 @@ export interface IChatMessageGroup {
 }
 
 export interface IIncomingMessagePayload {
-    chat_room: number;
-    id: string;
-    modified_at: string | null;
-    submitted_at: string;
-    submitted_by: IProfileReadDto;
-    text: string;
+    chat_room: number
+    id: string
+    modified_at: string | null
+    submitted_at: string
+    submitted_by: IProfileReadDto
+    text: string
 }
 
 export interface IChatHistoryResponse {
@@ -39,3 +39,20 @@ export interface IChatHistoryResponse {
     messageGroups: IChatMessageGroup[]
     hasMore: boolean
 }
+
+export type TSubscriptionPayload =
+    | {
+          action: 'update'
+          old: Partial<IIncomingMessagePayload>
+          new: IIncomingMessagePayload
+      }
+    | {
+          action: 'delete'
+          old: Partial<IIncomingMessagePayload>
+          new: null
+      }
+    | {
+          action: 'insert'
+          old: null
+          new: IIncomingMessagePayload
+      }

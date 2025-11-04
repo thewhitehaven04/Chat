@@ -39,4 +39,8 @@ export class ChatMessageRepository implements IChatMessageRepository {
 
         return { data, count }
     }
+
+    async deleteMessage(messageId: string) {
+        await this.#client.from('chat_messages').delete().eq('id', messageId).throwOnError()
+    }
 }

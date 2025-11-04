@@ -1,6 +1,8 @@
 import type {
     RealtimeChannel,
+    RealtimePostgresDeletePayload,
     RealtimePostgresInsertPayload,
+    RealtimePostgresUpdatePayload,
     SupabaseClient
 } from '@supabase/supabase-js'
 import type { Database } from '~~/server/supabase'
@@ -9,7 +11,8 @@ import type {
     IChatMessageGroup,
     IGetChatHistoryRequestDto,
     IIncomingMessagePayload,
-    IMessageInputDto
+    IMessageInputDto,
+    TSubscriptionPayload,
 } from '~~/server/modules/chat/models/types'
 import type { IChatMessageRepository, IChatService } from './types'
 import type { ProfileService } from '../profile/service'
@@ -35,29 +38,53 @@ class ChatService implements IChatService {
         this.#subscriptionChannel = null
     }
 
-    subscribe(
-        messageCallbackFn: (oldMessage: unknown, newMessage: IIncomingMessagePayload) => void
-    ) {
+    subscribe(messageCallbackFn: (subscriptionAction: TSubscriptionPayload) => void) {
         this.#subscriptionChannel = this.#client
             .channel('chat_messages_realtime')
             .on(
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'chat_messages' },
                 async (
-                    payload: RealtimePostgresInsertPayload<
-                        Database['public']['Tables']['chat_messages']['Row']
-                    >
+                    payload:
+                        | RealtimePostgresInsertPayload<
+                              Database['public']['Tables']['chat_messages']['Row']
+                          >
+                        | RealtimePostgresUpdatePayload<
+                              Database['public']['Tables']['chat_messages']['Row']
+                          >
+                        | RealtimePostgresDeletePayload<
+                              Database['public']['Tables']['chat_messages']['Row']
+                          >
                 ) => {
-                    const profile = await this.#profileSerivce.getProfileData(
-                        payload.new.submitted_by
-                    )
-                    messageCallbackFn(
-                        {
-                            ...payload.old,
-                            submitted_by: profile
-                        },
-                        { ...payload.new, submitted_by: profile }
-                    )
+                    if (payload.eventType === 'INSERT') {
+                        const profile = await this.#profileSerivce.getProfileData(
+                            payload.new.submitted_by
+                        )
+                        messageCallbackFn({
+                            action: 'insert',
+                            old: null,
+                            new: { ...payload.new, submitted_by: profile }
+                        })
+                    } else if (payload.eventType === 'DELETE') {
+                        const profile = await this.#profileSerivce.getProfileData(
+                            payload.old.submitted_by || ''
+                        )
+                        messageCallbackFn({
+                            action: 'delete',
+                            old: { ...payload.old, submitted_by: profile },
+                            new: null
+                        })
+                    } else if (payload.eventType === 'UPDATE') {
+                        const profile = await this.#profileSerivce.getProfileData(
+                            payload.new.submitted_by
+                        )
+                        messageCallbackFn({
+                            action: 'update',
+                            old: { ...payload.old, submitted_by: profile },
+                            new: { ...payload.new, submitted_by: profile }
+
+                        })
+                    }
                 }
             )
             .subscribe()

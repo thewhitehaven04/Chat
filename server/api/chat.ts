@@ -52,8 +52,8 @@ function defineChatHandler() {
 
             chatServiceMap.set(peer.id, chat)
 
-            chat.subscribe((_, newMessage) => {
-                peer.send(JSON.stringify(newMessage))
+            chat.subscribe((action) => {
+                peer.send(JSON.stringify(action))
             })
         },
 

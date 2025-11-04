@@ -8,6 +8,11 @@ const containerRef = useTemplateRef('root')
 defineExpose({
     containerRef
 })
+
+defineEmits<{
+    delete: [id: string]
+    edit: [id: string]
+}>()
 </script>
 
 <template>
@@ -33,16 +38,40 @@ defineExpose({
             </UPopover>
         </div>
         <ul class="grid-text w-full overflow-x-visible">
-            <li
-                v-for="m in $props.messages"
-                :key="m.id"
-                class="hover:bg-neutral-50 relative after:text-xs flex flex-row justify-between items-center"
-                :data-content="format(m.submitted_at, 'dd/MM HH:mm')"
+            <UPopover
+                v-for="message in $props.messages"
+                :key="message.id"
+                mode="hover"
+                :content="{
+                    side: 'top',
+                    align: 'end',
+                    alignOffset: 24
+                }"
             >
-                <p>
-                    {{ m.text }}
-                </p>
-            </li>
+                <template #content>
+                    <UButton
+                        icon="i-lucide-trash"
+                        size="xs"
+                        variant="ghost"
+                        color="neutral"
+                        @click="$emit('delete', message.id)"
+                    />
+                    <UButton
+                        icon="i-lucide-pencil"
+                        size="xs"
+                        variant="ghost"
+                        color="neutral"
+                        @click="$emit('edit', message.id)"
+                    />
+                </template>
+                <li
+                    class="hover:bg-neutral-50 min-h-8 relative after:text-xs flex flex-row justify-between items-center"
+                >
+                    <p>
+                        {{ message.text }}
+                    </p>
+                </li>
+            </UPopover>
         </ul>
         <UAvatar size="xl" class="grid-avatar" :src="$props.submitted_by.avatarUrl ?? undefined" />
     </div>
@@ -59,11 +88,9 @@ defineExpose({
 }
 
 li:hover::after {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: absolute;
+    right: 64px;
     content: attr(data-content);
-    width: 120px;
 }
 
 .grid-avatar {
