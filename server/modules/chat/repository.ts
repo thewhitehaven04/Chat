@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '~~/server/supabase'
-import type { IMessageInputDto } from './models/types'
+import type { IMessageEditInputDto, IMessageInputDto } from './models/types'
 import type { IChatMessageRepository, IRawChatMessagePayload } from './types'
 
 export class ChatMessageRepository implements IChatMessageRepository {
@@ -42,5 +42,20 @@ export class ChatMessageRepository implements IChatMessageRepository {
 
     async deleteMessage(messageId: string) {
         await this.#client.from('chat_messages').delete().eq('id', messageId).throwOnError()
+    }
+
+    async updateMessage(message: IMessageEditInputDto) {
+        return (
+            await this.#client
+                .from('chat_messages')
+                .update({
+                    text: message.text,
+                    modified_at: new Date().toISOString()
+                })
+                .eq('id', message.id)
+                .select('*, profiles(*)')
+                .single()
+                .throwOnError()
+        ).data
     }
 }

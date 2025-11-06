@@ -113,7 +113,7 @@ onUnmounted(() => {
             <USkeleton v-if="isChatHistoryLoading" class="h-12 w-12 rounded-full" />
             <ul v-else>
                 <li class="flex flex-col items-start justify-center flex-1 gap-8 w-full">
-                    <ChatFeaturesMessageSequence
+                    <ChatFeaturesBodyComponentsMessageSequence
                         v-if="firstMessage"
                         :id="firstMessage?.id"
                         ref="firstMessageThreshold"
@@ -121,7 +121,7 @@ onUnmounted(() => {
                         :submitted_by="firstMessage?.submitted_by"
                         :messages="firstMessage?.messages"
                     />
-                    <ChatFeaturesMessageSequence
+                    <ChatFeaturesBodyComponentsMessageSequence
                         v-for="m in remainingMessages"
                         :id="m.id"
                         :key="m.id"

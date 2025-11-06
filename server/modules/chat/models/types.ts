@@ -6,6 +6,10 @@ export interface IMessageInputDto {
     text: string
 }
 
+export interface IMessageEditInputDto extends IMessageInputDto {
+    id: string
+}
+
 export interface IGetChatHistoryRequestDto {
     chatRoom: number
     limit: number
@@ -56,3 +60,22 @@ export type TSubscriptionPayload =
           old: null
           new: IIncomingMessagePayload
       }
+
+export type TOutgoingWebSocketMessagePayload =
+    | {
+          action: 'insert'
+          message: IIncomingMessagePayload
+      }
+    | {
+          action: 'update'
+          message: IIncomingMessagePayload
+      }
+    | {
+          action: 'delete'
+          messageId: string
+      }
+
+export type TWebSocketMessagePayload =
+    | { action: 'edit'; messageId: string; chatRoom: number; text: string }
+    | { action: 'submit'; chatRoom: number; text: string }
+    | { action: 'delete'; messageId: string }

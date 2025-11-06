@@ -11,8 +11,9 @@ import type {
     IChatMessageGroup,
     IGetChatHistoryRequestDto,
     IIncomingMessagePayload,
+    IMessageEditInputDto,
     IMessageInputDto,
-    TSubscriptionPayload,
+    TSubscriptionPayload
 } from '~~/server/modules/chat/models/types'
 import type { IChatMessageRepository, IChatService } from './types'
 import type { ProfileService } from '../profile/service'
@@ -82,7 +83,6 @@ class ChatService implements IChatService {
                             action: 'update',
                             old: { ...payload.old, submitted_by: profile },
                             new: { ...payload.new, submitted_by: profile }
-
                         })
                     }
                 }
@@ -92,6 +92,14 @@ class ChatService implements IChatService {
 
     async sendMessage(message: IMessageInputDto) {
         return await this.#chatMessageRepository.storeMessage(message)
+    }
+
+    async editMessage(message: IMessageEditInputDto) {
+        return await this.#chatMessageRepository.updateMessage(message)
+    }
+
+    async deleteMessage(messageId: string): Promise<void> {
+        return await this.#chatMessageRepository.deleteMessage(messageId)
     }
 
     unsubscribe() {

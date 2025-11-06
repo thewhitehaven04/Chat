@@ -2,6 +2,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import type {
     IChatMessageGroup,
     IIncomingMessagePayload,
+    TOutgoingWebSocketMessagePayload,
     TSubscriptionPayload
 } from '~~/server/modules/chat/models/types'
 
@@ -18,13 +19,18 @@ export function useChat(options: {
     const isDisconnected = ref(false)
 
     const editedMessage = ref<null | string>(null)
-    const inputMessage = defineModel('message', {
-        type: String,
-        default: '',
-        required: true
-    })
+    const inputMessage = ref<string>('')
 
     let connection: WebSocket | null = null
+
+    const sendWebSocketMessage = (payload: object) => {
+        if (connection && connection.readyState === WebSocket.OPEN) {
+            connection.send(JSON.stringify(payload))
+        } else {
+            console.error('WebSocket is not connected.')
+            isDisconnected.value = true
+        }
+    }
 
     const skip = ref(0)
     const { data: chatHistory, pending: isChatHistoryPending } = useFetch(
@@ -52,43 +58,27 @@ export function useChat(options: {
     }
 
     const sendMessage = () => {
-        if (connection && connection.readyState === WebSocket.OPEN) {
-            if (editedMessage.value) {
-                connection.send(
-                    JSON.stringify({
-                        action: 'edit',
-                        messageId: editedMessage.value,
-                        chatRoom: Number(chatRoomId),
-                        text: inputMessage.value
-                    })
-                )
-            } else {
-                connection.send(
-                    JSON.stringify({
-                        action: 'submit',
-                        chatRoom: Number(chatRoomId),
-                        text: inputMessage.value
-                    })
-                )
-            }
+        if (editedMessage.value) {
+            sendWebSocketMessage({
+                action: 'edit',
+                messageId: editedMessage.value,
+                chatRoom: Number(chatRoomId),
+                text: inputMessage.value
+            })
         } else {
-            console.error('WebSocket is not connected.')
-            isDisconnected.value = true
+            sendWebSocketMessage({
+                action: 'submit',
+                chatRoom: Number(chatRoomId),
+                text: inputMessage.value
+            })
         }
     }
 
     const deleteMessage = (messageId: string) => {
-        if (connection && connection.readyState === WebSocket.OPEN) {
-            connection.send(
-                JSON.stringify({
-                    action: 'delete',
-                    messageId
-                })
-            )
-        } else {
-            console.error('WebSocket is not connected.')
-            isDisconnected.value = true
-        }
+        sendWebSocketMessage({
+            action: 'delete',
+            messageId
+        })
     }
 
     const prependMessages = (oldMessages: IChatMessageGroup[]) => {
@@ -158,18 +148,18 @@ export function useChat(options: {
 
         connection.addEventListener('message', (event: MessageEvent) => {
             try {
-                const message = JSON.parse(event.data) as TSubscriptionPayload
+                const message = JSON.parse(event.data) as TOutgoingWebSocketMessagePayload
 
                 if (message.action === 'delete') {
-                    onDelete(message.old.id || '')
+                    onDelete(message.messageId)
                 }
 
                 if (message.action === 'update') {
-                    onUpdate(message.new)
+                    onUpdate(message.message)
                 }
 
                 if (message.action === 'insert') {
-                    onInsert(message.new)
+                    onInsert(message.message)
                 }
 
                 onNewMessage?.()
