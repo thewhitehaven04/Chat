@@ -2,8 +2,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import type {
     IChatMessageGroup,
     IIncomingMessagePayload,
-    TOutgoingWebSocketMessagePayload,
-    TSubscriptionPayload
+    TWebSocketSubscriptionPayload
 } from '~~/server/modules/chat/models/types'
 
 export type TChat = ReturnType<typeof useChat>
@@ -18,8 +17,21 @@ export function useChat(options: {
     const messages = ref<IChatMessageGroup[]>([])
     const isDisconnected = ref(false)
 
-    const editedMessage = ref<null | string>(null)
+    const editedMessageId = ref<string | null>()
     const inputMessage = ref<string>('')
+
+    const setEditingMessage = (messageId: string) => {
+        const message = messages.value
+            .find((group) => group.messages.find((message) => message.id === messageId))
+            ?.messages.find((message) => message.id === messageId)
+
+        editedMessageId.value = message?.id
+        inputMessage.value = message?.text || ''
+    }
+
+    const resetEditingMessage = () => {
+        editedMessageId.value = null
+    }
 
     let connection: WebSocket | null = null
 
@@ -57,27 +69,33 @@ export function useChat(options: {
         }
     }
 
+    const _transformMessageText = (message: string) => {
+        return message.trim()
+    }
+
     const sendMessage = () => {
-        if (editedMessage.value) {
+        if (editedMessageId.value) {
             sendWebSocketMessage({
                 action: 'edit',
-                messageId: editedMessage.value,
+                id: editedMessageId.value,
                 chatRoom: Number(chatRoomId),
-                text: inputMessage.value
+                text: _transformMessageText(inputMessage.value)
             })
+            editedMessageId.value = null
         } else {
             sendWebSocketMessage({
                 action: 'submit',
                 chatRoom: Number(chatRoomId),
-                text: inputMessage.value
+                text: _transformMessageText(inputMessage.value)
             })
         }
+        inputMessage.value = ''
     }
 
     const deleteMessage = (messageId: string) => {
         sendWebSocketMessage({
             action: 'delete',
-            messageId
+            id: messageId
         })
     }
 
@@ -113,7 +131,7 @@ export function useChat(options: {
 
     const onInsert = (message: IIncomingMessagePayload) => {
         const currentSequence = messages.value.at(-1)
-        if (message.id === currentSequence?.submitted_by.id) {
+        if (message.submitted_by.id === currentSequence?.submitted_by.id) {
             currentSequence.messages.push({
                 id: message.id,
                 text: message.text,
@@ -148,18 +166,18 @@ export function useChat(options: {
 
         connection.addEventListener('message', (event: MessageEvent) => {
             try {
-                const message = JSON.parse(event.data) as TOutgoingWebSocketMessagePayload
+                const message = JSON.parse(event.data) as TWebSocketSubscriptionPayload
 
                 if (message.action === 'delete') {
-                    onDelete(message.messageId)
+                    onDelete(message.old.id || '')
                 }
 
                 if (message.action === 'update') {
-                    onUpdate(message.message)
+                    onUpdate(message.new)
                 }
 
                 if (message.action === 'insert') {
-                    onInsert(message.message)
+                    onInsert(message.new)
                 }
 
                 onNewMessage?.()
@@ -180,7 +198,9 @@ export function useChat(options: {
     })
 
     return {
-        editedMessage,
+        setEditingMessage,
+        resetEditingMessage,
+        editedMessageId,
         inputMessage,
         deleteMessage,
         messages,

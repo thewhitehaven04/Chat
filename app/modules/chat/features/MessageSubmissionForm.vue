@@ -7,6 +7,7 @@ const handleKeyUp = (event: KeyboardEvent) => {
         chat?.sendMessage()
     }
 }
+
 </script>
 
 <template>

@@ -3,7 +3,7 @@ import type {
     IGetChatHistoryRequestDto,
     IMessageEditInputDto,
     IMessageInputDto,
-    TSubscriptionPayload
+    TWebSocketSubscriptionPayload
 } from '~~/server/modules/chat/models/types'
 
 export interface IRawProfileData {
@@ -34,10 +34,10 @@ export interface IChatMessageRepository {
 }
 
 export interface IChatService {
-    subscribe(messageCallbackFn: (action: TSubscriptionPayload) => void): void
+    subscribe(messageCallbackFn: (action: TWebSocketSubscriptionPayload) => void): void
     unsubscribe(): void
     sendMessage(message: IMessageInputDto): Promise<unknown>
-    editMessage(message: IMessageInputDto): Promise<IRawChatMessagePayload>
+    editMessage(message: IMessageEditInputDto): Promise<IRawChatMessagePayload>
     deleteMessage(messageId: string): Promise<void>
     getChatHistory(params: IGetChatHistoryRequestDto): Promise<IChatHistoryResponse>
 }

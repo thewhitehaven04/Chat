@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
+import type { TChat } from '~/modules/chat/composables/useChat'
 import type { IChatMessageGroup } from '~~/server/modules/chat/models/types'
 defineProps<IChatMessageGroup>()
 
 const containerRef = useTemplateRef('root')
+const chat = inject<TChat>('chat')
 
 defineExpose({
     containerRef
 })
-
-defineEmits<{
-    delete: [id: string]
-    edit: [id: string]
-}>()
 </script>
 
 <template>
@@ -54,14 +51,14 @@ defineEmits<{
                         size="xs"
                         variant="ghost"
                         color="neutral"
-                        @click="$emit('delete', message.id)"
+                        @click="chat?.deleteMessage(message.id)"
                     />
                     <UButton
                         icon="i-lucide-pencil"
                         size="xs"
                         variant="ghost"
                         color="neutral"
-                        @click="$emit('edit', message.id)"
+                        @click="chat?.setEditingMessage(message.id)"
                     />
                 </template>
                 <li

@@ -13,7 +13,7 @@ import type {
     IIncomingMessagePayload,
     IMessageEditInputDto,
     IMessageInputDto,
-    TSubscriptionPayload
+    TWebSocketSubscriptionPayload
 } from '~~/server/modules/chat/models/types'
 import type { IChatMessageRepository, IChatService } from './types'
 import type { ProfileService } from '../profile/service'
@@ -39,7 +39,7 @@ class ChatService implements IChatService {
         this.#subscriptionChannel = null
     }
 
-    subscribe(messageCallbackFn: (subscriptionAction: TSubscriptionPayload) => void) {
+    subscribe(messageCallbackFn: (subscriptionAction: TWebSocketSubscriptionPayload) => void) {
         this.#subscriptionChannel = this.#client
             .channel('chat_messages_realtime')
             .on(

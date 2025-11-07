@@ -44,7 +44,7 @@ export interface IChatHistoryResponse {
     hasMore: boolean
 }
 
-export type TSubscriptionPayload =
+export type TWebSocketSubscriptionPayload =
     | {
           action: 'update'
           old: Partial<IIncomingMessagePayload>
@@ -61,21 +61,7 @@ export type TSubscriptionPayload =
           new: IIncomingMessagePayload
       }
 
-export type TOutgoingWebSocketMessagePayload =
-    | {
-          action: 'insert'
-          message: IIncomingMessagePayload
-      }
-    | {
-          action: 'update'
-          message: IIncomingMessagePayload
-      }
-    | {
-          action: 'delete'
-          messageId: string
-      }
-
-export type TWebSocketMessagePayload =
-    | { action: 'edit'; messageId: string; chatRoom: number; text: string }
+export type TWebSocketIncomingMessagePayload =
+    | { action: 'edit'; id: string; chatRoom: number; text: string }
     | { action: 'submit'; chatRoom: number; text: string }
-    | { action: 'delete'; messageId: string }
+    | { action: 'delete'; id: string }
