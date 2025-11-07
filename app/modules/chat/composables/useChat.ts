@@ -113,18 +113,21 @@ export function useChat(options: {
     }
 
     const onDelete = (messageId: string) => {
-        const groups = messages.value.map((group) => {
+        messages.value.forEach((group) => {
             group.messages = group.messages.filter((message) => message.id !== messageId)
-            return group
         })
-
-        return groups.filter((group) => group.messages.length > 0)
     }
 
     const onUpdate = (message: IIncomingMessagePayload) => {
         for (const group of messages.value) {
+            if (group.submitted_by.id !== message.submitted_by.id) {
+                continue
+            }
             for (const msg of group.messages) {
-                msg.text = message.text
+                if (msg.id === message.id) {
+                    msg.text = message.text
+                    break
+                }
             }
         }
     }
@@ -169,7 +172,7 @@ export function useChat(options: {
                 const message = JSON.parse(event.data) as TWebSocketSubscriptionPayload
 
                 if (message.action === 'delete') {
-                    onDelete(message.old.id || '')
+                    onDelete(message.old)
                 }
 
                 if (message.action === 'update') {

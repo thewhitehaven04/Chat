@@ -76,6 +76,7 @@ function defineChatHandler() {
                     await service?.deleteMessage(messageDto.id)
                 }
             } catch (_error) {
+                console.log(_error)
                 peer.send({ success: false, data: null, error: 'Something went wrong' })
             }
         },

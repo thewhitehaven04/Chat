@@ -44,7 +44,7 @@ class ChatService implements IChatService {
             .channel('chat_messages_realtime')
             .on(
                 'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+                { event: '*', schema: 'public', table: 'chat_messages' },
                 async (
                     payload:
                         | RealtimePostgresInsertPayload<
@@ -67,12 +67,9 @@ class ChatService implements IChatService {
                             new: { ...payload.new, submitted_by: profile }
                         })
                     } else if (payload.eventType === 'DELETE') {
-                        const profile = await this.#profileSerivce.getProfileData(
-                            payload.old.submitted_by || ''
-                        )
                         messageCallbackFn({
                             action: 'delete',
-                            old: { ...payload.old, submitted_by: profile },
+                            old: payload.old.id || '',
                             new: null
                         })
                     } else if (payload.eventType === 'UPDATE') {

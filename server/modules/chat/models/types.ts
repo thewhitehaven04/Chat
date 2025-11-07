@@ -52,7 +52,7 @@ export type TWebSocketSubscriptionPayload =
       }
     | {
           action: 'delete'
-          old: Partial<IIncomingMessagePayload>
+          old: string 
           new: null
       }
     | {
