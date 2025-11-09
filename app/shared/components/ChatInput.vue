@@ -5,13 +5,19 @@ const emit = defineEmits<{
 
 const handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === 'Enter' && !event.shiftKey) {
-        emit('key-enter-pressed') 
+        emit('key-enter-pressed')
+        event.preventDefault()
     }
 }
+
+const model = defineModel<string>({
+    required: true
+})
 </script>
 
 <template>
     <UTextarea
+        v-model="model"
         class="w-full"
         placeholder="What do you think?"
         :rows="4"

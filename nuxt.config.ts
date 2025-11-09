@@ -38,6 +38,7 @@ export default defineNuxtConfig({
     app: {
         head: {
             title: 'Mutlichat',
+            link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
         }
     }
 })

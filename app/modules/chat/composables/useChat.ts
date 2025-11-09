@@ -15,9 +15,10 @@ export function useChat(options: {
     const { chatRoomId, onNewMessage, onPrepend } = options
 
     const messages = ref<IChatMessageGroup[]>([])
+
     const isDisconnected = ref(false)
 
-    const editedMessageId = ref<string | null>()
+    const editedMessageId = ref<string | null>(null)
     const inputMessage = ref<string>('')
 
     const setEditingMessage = (messageId: string) => {
@@ -25,7 +26,7 @@ export function useChat(options: {
             .find((group) => group.messages.find((message) => message.id === messageId))
             ?.messages.find((message) => message.id === messageId)
 
-        editedMessageId.value = message?.id
+        editedMessageId.value = messageId
         inputMessage.value = message?.text || ''
     }
 

@@ -103,7 +103,7 @@ watch(
         </ul>
 
         <ChatInput
-            :v-model="inputMessage"
+            v-model:model-value="inputMessage"
             :disabled="messages.length === 0"
             @key-enter-pressed="handleSubmit()"
         />

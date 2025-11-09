@@ -21,7 +21,6 @@ const chat = useChat({
     },
     chatRoomId: props.roomId
 })
-
 const {
     messages,
     isDisconnected,
@@ -31,6 +30,8 @@ const {
     inputMessage,
     sendMessage
 } = chat
+
+provide('chat', chat)
 
 const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 const firstMessage = computed(() => messages.value[0])
@@ -145,6 +146,6 @@ onUnmounted(() => {
         <div v-if="isDisconnected" class="flex flex-col text-white bg-red-300 font-bold text-lg">
             You've been disconnected
         </div>
-        <ChatInput v-model="inputMessage" @key-enter-pressed="sendMessage()" />
+        <ChatInput v-model:model-value="inputMessage" @key-enter-pressed="sendMessage()" />
     </UContainer>
 </template>

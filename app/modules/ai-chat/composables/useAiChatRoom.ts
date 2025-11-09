@@ -42,19 +42,20 @@ export function useAiChatRoom(onRequest: () => void) {
     
 
     const handleSubmit = async () => {
+        const message = inputMessage.value
         const optimisticUserMessage = {
             id: uuidv4(),
             date: new Date(),
-            message: inputMessage.value,
+            message,
             type: 'user' as const
         }
-
         await $fetch<ReadableStream<Uint8Array>>(`/api/ai-chat/${route.params.roomId}/message`, {
             method: 'POST',
             responseType: 'stream',
-            body: { message: inputMessage.value },
+            body: { message },
             onRequest: () => {
                 messages.value.push(optimisticUserMessage)
+                inputMessage.value = ''
                 onRequest()
             },
             onResponseError: () => {

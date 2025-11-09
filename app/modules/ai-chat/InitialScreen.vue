@@ -11,11 +11,17 @@ const { data: profile } = useProfile()
 const initialMessage = ref<string>('')
 const sentMessage = ref<string | null>(null)
 
+const resetInput = () => {
+    initialMessage.value = ''
+}
+
 const handleSubmit = async () => {
-    sentMessage.value = initialMessage.value
+    const message = initialMessage.value
+    resetInput()
+    sentMessage.value = message
     const chatCreationResponse = await $fetch('/api/ai-chat', {
         method: 'POST',
-        body: { message: initialMessage.value },
+        body: { message },
         onResponse: ({ error }) => {
             if (!error) {
                 refresh()
@@ -25,7 +31,7 @@ const handleSubmit = async () => {
 
     await $fetch(`/api/ai-chat/${chatCreationResponse.chatId}/message`, {
         method: 'POST',
-        body: { message: initialMessage.value },
+        body: { message },
         onResponse: async ({ error }) => {
             if (!error) {
                 await navigateTo(`/ai-chat/${chatCreationResponse.chatId}`, {
@@ -66,7 +72,7 @@ const handleSubmit = async () => {
             </UContainer>
             <p v-else class="text-lg font-md">You haven't started chatting yet</p>
         </UContainer>
-        <ChatInput v-model="initialMessage" @key-enter-pressed="handleSubmit()" />
+        <ChatInput v-model:model-value="initialMessage" @key-enter-pressed="handleSubmit()" />
     </UContainer>
 </template>
 
