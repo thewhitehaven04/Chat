@@ -1,0 +1,1 @@
+export const useProfile = () => useFetch('/api/profile', { key: 'profile' })

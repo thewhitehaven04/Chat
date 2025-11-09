@@ -1,15 +1,13 @@
-
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { useProfile } from '~/shared/composables/queries/useProfile'
 import {
     profileUpdateValidation,
     type TProfileUpdateDto
 } from '~~/shared/modules/profile/models/validation'
 const isEditing = ref(false)
 
-const { data: profile, refresh } = useFetch('/api/profile', {
-    key: 'profile'
-})
+const { data: profile, refresh } = useProfile()
 
 watch(profile, () => {
     if (profile.value) {

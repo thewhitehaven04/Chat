@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: { enabled: true },
-    modules: ['@nuxt/ui', '@nuxt/eslint'],
+    modules: ['@nuxt/ui', '@nuxt/eslint', '@nuxt/image'],
     vite: {
         plugins: [tailwindcss()]
     },
@@ -33,6 +33,11 @@ export default defineNuxtConfig({
         public: {
             supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
             supabasePublishableKey: process.env.NUXT_PUBLIC_PUBLISHABLE_KEY
+        }
+    },
+    app: {
+        head: {
+            title: 'Mutlichat',
         }
     }
 })

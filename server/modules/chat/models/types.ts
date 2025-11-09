@@ -47,18 +47,15 @@ export interface IChatHistoryResponse {
 export type TWebSocketSubscriptionPayload =
     | {
           action: 'update'
-          old: Partial<IIncomingMessagePayload>
-          new: IIncomingMessagePayload
+          data: IIncomingMessagePayload
       }
     | {
           action: 'delete'
-          old: string 
-          new: null
+          data: string
       }
     | {
           action: 'insert'
-          old: null
-          new: IIncomingMessagePayload
+          data: IIncomingMessagePayload
       }
 
 export type TWebSocketIncomingMessagePayload =

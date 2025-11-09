@@ -63,14 +63,12 @@ class ChatService implements IChatService {
                         )
                         messageCallbackFn({
                             action: 'insert',
-                            old: null,
-                            new: { ...payload.new, submitted_by: profile }
+                            data: { ...payload.new, submitted_by: profile }
                         })
                     } else if (payload.eventType === 'DELETE') {
                         messageCallbackFn({
                             action: 'delete',
-                            old: payload.old.id || '',
-                            new: null
+                            data: payload.old.id || ''
                         })
                     } else if (payload.eventType === 'UPDATE') {
                         const profile = await this.#profileSerivce.getProfileData(
@@ -78,8 +76,7 @@ class ChatService implements IChatService {
                         )
                         messageCallbackFn({
                             action: 'update',
-                            old: { ...payload.old, submitted_by: profile },
-                            new: { ...payload.new, submitted_by: profile }
+                            data: { ...payload.new, submitted_by: profile }
                         })
                     }
                 }

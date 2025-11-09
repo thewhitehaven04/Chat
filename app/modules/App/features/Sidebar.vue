@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import { useProfile } from '~/shared/composables/queries/useProfile'
 
 const { data: chatRooms } = useFetch('/api/chat/rooms', {
     key: 'chatRooms'
@@ -7,7 +8,7 @@ const { data: chatRooms } = useFetch('/api/chat/rooms', {
 const { data: aiChatRooms } = useFetch('/api/ai-chat/rooms', {
     key: 'aiChatRooms'
 })
-const { data: profile } = useFetch('/api/profile', { key: 'profile' })
+const { data: profile } = useProfile()
 
 const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
     [
@@ -38,7 +39,10 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
 <template>
     <UDashboardSidebar :collapsible="false" :resizable="false">
         <template #header>
-            <h1 class="text-lg">Multichat</h1>
+            <div class="flex flex-row gap-2 items-center">
+                <img alt="App icon" src="./../../../../public/app-icon.jpg" >
+                <h1 class="text-lg">Multichat</h1>
+            </div>
         </template>
         <template #default>
             <UNavigationMenu orientation="vertical" variant="pill" :items="items[0]">

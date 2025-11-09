@@ -1,7 +1,7 @@
 import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@supabase/ssr'
 import { ChatService } from '../modules/chat/service'
 import { AuthService } from '../modules/auth/service'
-import type { IMessage, TWebSocketIncomingMessagePayload } from '~~/server/modules/chat/models/types'
+import type { TWebSocketIncomingMessagePayload } from '~~/server/modules/chat/models/types'
 import { ProfileService } from '~~/server/modules/profile/service'
 import type { IChatService } from '../modules/chat/types'
 import { ChatMessageRepository } from '../modules/chat/repository'
@@ -64,19 +64,11 @@ function defineChatHandler() {
                 if (messageDto.action === 'submit') {
                     await service?.sendMessage(messageDto)
                 } else if (messageDto.action === 'edit') {
-                    const message = await service?.editMessage(messageDto)
-                    peer.send(
-                        JSON.stringify({
-                            id: message?.id,
-                            text: message?.text,
-                            submitted_at: message?.submitted_at
-                        } as IMessage)
-                    )
+                    await service?.editMessage(messageDto)
                 } else if (messageDto.action === 'delete') {
                     await service?.deleteMessage(messageDto.id)
                 }
-            } catch (_error) {
-                console.log(_error)
+            } catch (_) {
                 peer.send({ success: false, data: null, error: 'Something went wrong' })
             }
         },

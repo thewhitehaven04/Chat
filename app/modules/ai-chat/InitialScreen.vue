@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { useProfile } from '~/shared/composables/queries/useProfile'
+
 const { data: aiChatRooms = [], refresh } = useFetch('/api/ai-chat/rooms', {
     key: 'aiChatRooms'
 })
+
+const { data: profile } = useProfile()
 
 const isAnswerPending = ref(false)
 const sentMessage = ref<string | null>(null)
@@ -21,7 +25,7 @@ const handleSubmit = async (message: string) => {
 
     await $fetch(`/api/ai-chat/${chatCreationResponse.chatId}/message`, {
         method: 'POST',
-        body: { message }
+        body: { message },
     })
 
     await navigateTo(`/ai-chat/${chatCreationResponse.chatId}`, {
@@ -43,8 +47,8 @@ const handleSubmit = async (message: string) => {
                 v-else-if="!!aiChatRooms?.length"
                 class="flex flex-col justify-center w-min h-full gap-2"
             >
-                <div class="title-appear-animation w-full">
-                    <h1 class="font-bold text-2xl mb-4">Hello, user.</h1>
+                <div v-if="profile" class="title-appear-animation w-full">
+                    <h1 class="font-bold text-2xl mb-4">Hello, {{ profile.name }}</h1>
                     <p class="font-medium text-neutral-500 text-sm self-start">Recent</p>
                 </div>
                 <div class="flex flex-col gap-3 entries-appear-animation">

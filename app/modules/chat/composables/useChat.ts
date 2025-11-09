@@ -169,18 +169,18 @@ export function useChat(options: {
 
         connection.addEventListener('message', (event: MessageEvent) => {
             try {
-                const message = JSON.parse(event.data) as TWebSocketSubscriptionPayload
+                const { action, data } = JSON.parse(event.data) as TWebSocketSubscriptionPayload
 
-                if (message.action === 'delete') {
-                    onDelete(message.old)
+                if (action === 'delete') {
+                    onDelete(data)
                 }
 
-                if (message.action === 'update') {
-                    onUpdate(message.new)
+                if (action === 'update') {
+                    onUpdate(data)
                 }
 
-                if (message.action === 'insert') {
-                    onInsert(message.new)
+                if (action === 'insert') {
+                    onInsert(data)
                 }
 
                 onNewMessage?.()
