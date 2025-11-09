@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ChatInput from '~/shared/components/ChatInput.vue'
 import { useProfile } from '~/shared/composables/queries/useProfile'
 
 const { data: aiChatRooms = [], refresh } = useFetch('/api/ai-chat/rooms', {
@@ -7,15 +8,14 @@ const { data: aiChatRooms = [], refresh } = useFetch('/api/ai-chat/rooms', {
 
 const { data: profile } = useProfile()
 
-const isAnswerPending = ref(false)
+const initialMessage = ref<string>('')
 const sentMessage = ref<string | null>(null)
 
-const handleSubmit = async (message: string) => {
-    isAnswerPending.value = true
-    sentMessage.value = message
+const handleSubmit = async () => {
+    sentMessage.value = initialMessage.value
     const chatCreationResponse = await $fetch('/api/ai-chat', {
         method: 'POST',
-        body: { message },
+        body: { message: initialMessage.value },
         onResponse: ({ error }) => {
             if (!error) {
                 refresh()
@@ -25,11 +25,14 @@ const handleSubmit = async (message: string) => {
 
     await $fetch(`/api/ai-chat/${chatCreationResponse.chatId}/message`, {
         method: 'POST',
-        body: { message },
-    })
-
-    await navigateTo(`/ai-chat/${chatCreationResponse.chatId}`, {
-        replace: true
+        body: { message: initialMessage.value },
+        onResponse: async ({ error }) => {
+            if (!error) {
+                await navigateTo(`/ai-chat/${chatCreationResponse.chatId}`, {
+                    replace: true
+                })
+            }
+        }
     })
 }
 </script>
@@ -37,7 +40,7 @@ const handleSubmit = async (message: string) => {
 <template>
     <UContainer class="flex flex-col gap-4 h-full">
         <UContainer class="flex-1">
-            <AiChatFeaturesChatMessage
+            <LazyAiChatFeaturesChatMessage
                 v-if="!!sentMessage"
                 :date="new Date()"
                 :type="'user'"
@@ -63,10 +66,7 @@ const handleSubmit = async (message: string) => {
             </UContainer>
             <p v-else class="text-lg font-md">You haven't started chatting yet</p>
         </UContainer>
-        <ChatFeaturesMessageSubmissionForm
-            :is-disabled="false"
-            @message-submitted="handleSubmit($event)"
-        />
+        <ChatInput v-model="initialMessage" @key-enter-pressed="handleSubmit()" />
     </UContainer>
 </template>
 
@@ -78,7 +78,12 @@ const handleSubmit = async (message: string) => {
 
 .entries-appear-animation {
     animation: entries-appear 0.8s ease-in-out 0s normal forwards;
-    background: linear-gradient(180deg, var(--text-color-muted), var(--text-color-muted) 33.33%, white 66.66%);
+    background: linear-gradient(
+        180deg,
+        var(--text-color-muted),
+        var(--text-color-muted) 33.33%,
+        white 66.66%
+    );
     color: transparent;
     background-clip: text;
     background-size: auto 300%;

@@ -16,6 +16,8 @@ export function useAiChatRoom(onRequest: () => void) {
         }
     )
 
+    const inputMessage = ref<string>('')
+
     const messages = ref<(IChatMessageProps & { id: string })[]>([])
     const isChatPending = computed(() => isHistoryLoading.value && !chatMessages.value)
 
@@ -39,18 +41,18 @@ export function useAiChatRoom(onRequest: () => void) {
     }, 1000)
     
 
-    const handleSubmit = async (message: string) => {
+    const handleSubmit = async () => {
         const optimisticUserMessage = {
             id: uuidv4(),
             date: new Date(),
-            message: message,
+            message: inputMessage.value,
             type: 'user' as const
         }
 
         await $fetch<ReadableStream<Uint8Array>>(`/api/ai-chat/${route.params.roomId}/message`, {
             method: 'POST',
             responseType: 'stream',
-            body: { message },
+            body: { message: inputMessage.value },
             onRequest: () => {
                 messages.value.push(optimisticUserMessage)
                 onRequest()
@@ -87,6 +89,7 @@ export function useAiChatRoom(onRequest: () => void) {
     }
 
     return {
+        inputMessage,
         messages,
         isChatPending,
         handleSubmit,

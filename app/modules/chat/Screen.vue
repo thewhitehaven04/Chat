@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useChat } from '~/modules/chat/composables/useChat'
+import ChatInput from '~/shared/components/ChatInput.vue'
 import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
 
 const props = defineProps<{ roomId: string }>()
@@ -21,9 +22,15 @@ const chat = useChat({
     chatRoomId: props.roomId
 })
 
-const { messages, isDisconnected, chatHistory, isChatHistoryLoading, loadMoreHistory } = chat
-
-provide('chat', chat)
+const {
+    messages,
+    isDisconnected,
+    chatHistory,
+    isChatHistoryLoading,
+    loadMoreHistory,
+    inputMessage,
+    sendMessage
+} = chat
 
 const showNoMessages = computed(() => messages.value.length === 0 && !isChatHistoryLoading.value)
 const firstMessage = computed(() => messages.value[0])
@@ -138,6 +145,6 @@ onUnmounted(() => {
         <div v-if="isDisconnected" class="flex flex-col text-white bg-red-300 font-bold text-lg">
             You've been disconnected
         </div>
-        <ChatFeaturesMessageSubmissionForm />
+        <ChatInput v-model="inputMessage" @key-enter-pressed="sendMessage()" />
     </UContainer>
 </template>

@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import type { TChat } from '~/modules/chat/composables/useChat'
+const emit = defineEmits<{
+    'key-enter-pressed': []
+}>()
 
-const chat = inject<TChat>('chat')
 const handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === 'Enter' && !event.shiftKey) {
-        chat?.sendMessage()
+        emit('key-enter-pressed') 
     }
 }
-
 </script>
 
 <template>
     <UTextarea
-        v-if="!!chat"
-        v-model="chat.inputMessage.value"
         class="w-full"
         placeholder="What do you think?"
         :rows="4"

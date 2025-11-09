@@ -1,15 +1,15 @@
 <script>
-useHead({
-    titleTemplate: (titleChunk) => {
-        return titleChunk ? `${titleChunk} | Multichat` : 'Multichat'
-    },
-    meta: [
-        {
-            name: 'description',
-            content: 'Multichat - your communication and AI chat app'
-        }
-    ]
-})
+// useHead({
+//     titleTemplate: (titleChunk) => {
+//         return titleChunk ? `${titleChunk} | Multichat` : 'Multichat'
+//     },
+//     meta: [
+//         {
+//             name: 'description',
+//             content: 'Multichat - your communication and AI chat app'
+//         }
+//     ]
+// })
 </script>
 
 <template>

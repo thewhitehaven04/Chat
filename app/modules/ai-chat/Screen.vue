@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAiChatRoom } from '~/modules/ai-chat/composables/useAiChatRoom'
+import ChatInput from '~/shared/components/ChatInput.vue'
 
 definePageMeta({
     layout: 'authorized'
@@ -23,7 +24,7 @@ const scrollToBottom = () => {
     })
 }
 
-const { messages, handleSubmit, handleLoadMore } = useAiChatRoom(scrollToBottom)
+const { messages, handleSubmit, handleLoadMore, inputMessage } = useAiChatRoom(scrollToBottom)
 
 let intersectionObserver: IntersectionObserver
 
@@ -100,9 +101,11 @@ watch(
                 />
             </li>
         </ul>
-        <ChatFeaturesMessageSubmissionForm
-            :is-disabled="false"
-            @message-submitted="handleSubmit($event)"
+
+        <ChatInput
+            :v-model="inputMessage"
+            :disabled="messages.length === 0"
+            @key-enter-pressed="handleSubmit()"
         />
     </UContainer>
 </template>
