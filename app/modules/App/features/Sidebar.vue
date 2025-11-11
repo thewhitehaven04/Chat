@@ -37,10 +37,14 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
 </script>
 
 <template>
-    <UDashboardSidebar :collapsible="false" :resizable="false">
+    <UDashboardSidebar
+        :collapsible="false"
+        :resizable="false"
+        :ui="{ footer: 'border-t border-default' }"
+    >
         <template #header>
             <div class="flex flex-row gap-2 items-center">
-                <img alt="App icon" src="./../../../../public/app-icon.jpg" >
+                <!-- <img alt="App icon" src="./../../../../public/app-icon.jpg" > -->
                 <h1 class="text-lg">Multichat</h1>
             </div>
         </template>
@@ -59,12 +63,15 @@ const items: ComputedRef<NavigationMenuItem[][]> = computed(() => [
         </template>
         <template #footer>
             <div class="flex flex-col gap-2 w-full">
-                <div class="flex flex-row gap-4 items-center">
-                    <UAvatar size="md" :src="profile?.avatarUrl ?? undefined" />
-                    <ULink href="/profile" class="overflow-ellipsis w-full">
-                        {{ profile?.name }}
-                    </ULink>
-                </div>
+                <UButton
+                    :avatar="{
+                        src: profile?.avatarUrl ?? undefined
+                    }"
+                    :label="profile?.name"
+                    variant="ghost"
+                    :color="'neutral'"
+                />
+
                 <AppFeaturesComponentsLogoutButton />
             </div>
         </template>

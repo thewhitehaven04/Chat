@@ -16,11 +16,7 @@ export default defineNuxtConfig({
             websocket: true
         }
     },
-    routeRules: {
-        '*': {
-            ssr: false
-        }
-    },
+    ssr: false,
     components: [
         {
             path: '~/modules'
@@ -39,6 +35,13 @@ export default defineNuxtConfig({
         head: {
             title: 'Mutlichat',
             link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
+        }
+    },
+    ui: {
+        theme: {
+            defaultVariants: {
+                color: 'zinc'
+            }
         }
     }
 })

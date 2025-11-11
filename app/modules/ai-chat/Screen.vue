@@ -2,9 +2,6 @@
 import { useAiChatRoom } from '~/modules/ai-chat/composables/useAiChatRoom'
 import ChatInput from '~/shared/components/ChatInput.vue'
 
-definePageMeta({
-    layout: 'authorized'
-})
 
 defineProps<{
     roomId: string
@@ -24,7 +21,8 @@ const scrollToBottom = () => {
     })
 }
 
-const { messages, handleSubmit, handleLoadMore, inputMessage } = useAiChatRoom(scrollToBottom)
+const { messages, handleSubmit, handleLoadMore, inputMessage, isResponsePending } =
+    useAiChatRoom(scrollToBottom)
 
 let intersectionObserver: IntersectionObserver
 
@@ -99,6 +97,11 @@ watch(
                     :type="message.type"
                     :message="message.message"
                 />
+            </li>
+            <li>
+                <div v-if="isResponsePending" class="flex flex-row justify-start">
+                    <div class="h-[3rem] p-4 animate-pulse bg-neutral-200 rounded-lg w-xl" />
+                </div>
             </li>
         </ul>
 

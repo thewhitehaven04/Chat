@@ -20,6 +20,7 @@ export function useAiChatRoom(onRequest: () => void) {
 
     const messages = ref<(IChatMessageProps & { id: string })[]>([])
     const isChatPending = computed(() => isHistoryLoading.value && !chatMessages.value)
+    const isResponsePending = ref(false)
 
     watch(chatMessages, (chatMessages) => {
         if (chatMessages) {
@@ -49,6 +50,7 @@ export function useAiChatRoom(onRequest: () => void) {
             message,
             type: 'user' as const
         }
+        isResponsePending.value = true
         await $fetch<ReadableStream<Uint8Array>>(`/api/ai-chat/${route.params.roomId}/message`, {
             method: 'POST',
             responseType: 'stream',
@@ -79,6 +81,7 @@ export function useAiChatRoom(onRequest: () => void) {
                     if (reader && incomingMessage) {
                         let nextChunk = await reader.read()
                         onRequest()
+                        isResponsePending.value = false
                         while (!nextChunk.done) {
                             incomingMessage.message += decoder.decode(nextChunk.value)
                             nextChunk = await reader.read()
@@ -95,6 +98,7 @@ export function useAiChatRoom(onRequest: () => void) {
         isChatPending,
         handleSubmit,
         handleLoadMore,
-        isHistoryLoading
+        isHistoryLoading,
+        isResponsePending
     }
 }

@@ -5,8 +5,9 @@ import type {
     IUserDto
 } from '~~/shared/modules/auth/models/types'
 import type { IAuthService } from './types'
+import type { TSignInResult } from './models/types'
 
-class AuthService<ClientType extends SupabaseClient> implements IAuthService<ClientType> {
+class AuthService<ClientType extends SupabaseClient> implements IAuthService {
     client: ClientType
 
     constructor(client: ClientType) {
@@ -25,8 +26,13 @@ class AuthService<ClientType extends SupabaseClient> implements IAuthService<Cli
         })
     }
 
-    async signIn(credentials: ISignInInputDto) {
-        return this.client.auth.signInWithPassword(credentials)
+    async signIn(credentials: ISignInInputDto): Promise<TSignInResult> {
+        const result = this.client.auth.signInWithPassword(credentials)
+
+        if (!(await result).error) {
+            return { success: true }
+        }
+        return { success: false, message: (await result).error?.message || '' }
     }
 
     async signOut() {

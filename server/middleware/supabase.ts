@@ -1,4 +1,3 @@
-import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@supabase/ssr'
 import { AuthService } from '../modules/auth/service'
 import { ChatService } from '../modules/chat/service'
 import { ProfileService } from '~~/server/modules/profile/service'
@@ -11,32 +10,12 @@ import { AIChatRoomsRepository } from '../modules/ai-chat/roomRepository'
 import { ChatRoomsService } from '../modules/chat-rooms/service'
 import { AiChatRoomsService } from '../modules/ai-chat-rooms/service'
 import { AIChatRoomsRepository as AiChatRoomsRepository } from '../modules/ai-chat-rooms/repository'
+import { getServerClient } from '../modules/supabase-adapter/getServerClient'
 
 export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig()
 
-    const serverClient = createServerClient(
-        config.public.supabaseUrl as string,
-        config.public.supabasePublishableKey as string,
-        {
-            cookies: {
-                getAll: async () => {
-                    const cookie = event.headers.get('Cookie')
-                    return cookie
-                        ? (parseCookieHeader(cookie) as { name: string; value: string }[])
-                        : []
-                },
-                setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        event.headers.append(
-                            'Set-Cookie',
-                            serializeCookieHeader(name, value, options)
-                        )
-                    )
-                }
-            }
-        }
-    )
+    const serverClient = getServerClient(config, event)
 
     const auth = new AuthService(serverClient)
     const profile = new ProfileService(serverClient, auth)

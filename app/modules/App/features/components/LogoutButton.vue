@@ -11,7 +11,7 @@ const handleLogout = async () => {
 <template>
     <UButton
         type="button"
-        variant="soft"
+        variant="ghost"
         color="error"
         class="w-full"
         icon="i-lucide-log-out"

@@ -31,6 +31,7 @@
     "zod": "4.1.12"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.73",
     "@types/markdown-it": "^14.1.2",
     "eslint": "^9.37.0",
     "eslint-plugin-vue": "^10.5.0",
