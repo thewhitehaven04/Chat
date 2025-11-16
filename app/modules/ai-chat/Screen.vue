@@ -78,7 +78,7 @@ watch(
     <UContainer class="flex flex-col gap-4 h-full">
         <ul
             ref="scrollingContainer"
-            class="flex-1 flex flex-col items-stretch w-full gap-4 overflow-y-scroll"
+            class="flex-1 flex flex-col items-stretch w-full gap-4 overflow-y-auto"
         >
             <li>
                 <AiChatFeaturesChatMessage
@@ -100,7 +100,7 @@ watch(
             </li>
             <li>
                 <div v-if="isResponsePending" class="flex flex-row justify-start">
-                    <div class="h-[3rem] p-4 animate-pulse bg-neutral-200 rounded-lg w-xl" />
+                    <div class="h-[3rem] p-4 animate-pulse bg-accented rounded-lg w-xl" />
                 </div>
             </li>
         </ul>

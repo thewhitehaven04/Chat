@@ -70,7 +70,9 @@ const handleSubmit = async () => {
                     >
                 </div>
             </UContainer>
-            <p v-else class="text-lg font-md">You haven't started chatting yet</p>
+            <UContainer v-else class="flex flex-col items-center justify-center h-full">
+                <p class="text-xl font-xl">Let's start chatting!</p>
+            </UContainer>
         </UContainer>
         <ChatInput v-model:model-value="initialMessage" @key-enter-pressed="handleSubmit()" />
     </UContainer>

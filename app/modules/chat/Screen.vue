@@ -117,7 +117,7 @@ onUnmounted(() => {
                 <ULink as="button" href="/" icon="i-lucide-x" />
             </template>
         </UHeader>
-        <div ref="chat" class="flex-1 overflow-y-scroll">
+        <div ref="chat" class="flex-1 overflow-y-auto">
             <USkeleton v-if="isChatHistoryLoading" class="h-12 w-12 rounded-full" />
             <ul v-else>
                 <li class="flex flex-col items-start justify-center flex-1 gap-8 w-full">

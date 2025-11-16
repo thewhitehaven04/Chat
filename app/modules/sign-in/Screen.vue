@@ -4,7 +4,7 @@ import * as z from 'zod'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 
 const schema = z.object({
-    email: z.email('Invalid email'),
+    email: z.email('Incorrect e-mail format'),
     password: z.string().min(8, 'Password must be at least 8 characters')
 })
 
@@ -47,14 +47,14 @@ const handleSubmit = async ({ data }: FormSubmitEvent<z.output<typeof schema>>) 
                         class="w-full"
                     />
                 </UFormField>
-                <UButton label="Sign In" type="submit" />
+                <UButton label="Sign In" color="neutral" type="submit" />
             </UForm>
         </template>
         <template #footer>
             <div class="flex flex-row items-center justify-between w-full">
                 <div>Don't have an account?</div>
                 <NuxtLink :to="{ path: '/sign-up' }">
-                    <UButton variant="link" label="Sign up" />
+                    <UButton variant="link" color="neutral" label="Sign up" />
                 </NuxtLink>
             </div>
         </template>

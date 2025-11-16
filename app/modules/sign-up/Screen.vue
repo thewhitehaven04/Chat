@@ -77,14 +77,14 @@ const handleSubmit = async (evt: FormSubmitEvent<Schema>) => {
                 <UFormField label="Nickname" name="name">
                     <UInput id="name" v-model="formState.name" type="text" class="w-full" />
                 </UFormField>
-                <UButton label="Sign Up" type="submit" block />
+                <UButton label="Sign Up" type="submit" color="neutral" block />
             </UForm>
         </template>
         <template #footer>
             <div class="flex flex-row items-center justify-between w-full">
                 <div>Already have an account?</div>
                 <NuxtLink :to="{ path: '/sign-in' }">
-                    <UButton variant="link" label="Sign in" />
+                    <UButton variant="link" label="Sign in" color="neutral" />
                 </NuxtLink>
             </div>
         </template>
