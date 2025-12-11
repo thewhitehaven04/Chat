@@ -5,7 +5,7 @@ import type { IChatCreateDto } from '~~/server/modules/chat-rooms/models/types'
 
 const { val: isModalOpen, toggle: toggleModal } = useBoolean()
 
-const { refresh: refreshChatRooms } = useFetch('/api/chat/rooms')
+const { refresh: refreshChatRooms } = useFetch('/api/chat/rooms', { key: 'chatRooms' })
 
 const creationModalSchema = z.object({
     name: z.string().min(3, 'Use a descriptive name that is at least 3 chatacters long'),
@@ -17,7 +17,7 @@ const formState = reactive({
     description: ''
 })
 
-const handleChatCreate = async (data: IChatCreateDto) => {
+const handleChatCreate = async ({ data }: { data: IChatCreateDto }) => {
     await $fetch('/api/chat/room', {
         method: 'POST',
         body: data,

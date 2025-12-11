@@ -21,6 +21,16 @@ export function useChat(options: {
     const editedMessageId = ref<string | null>(null)
     const inputMessage = ref<string>('')
 
+    const isRespondingTo = ref<string|null>(null)
+
+    const setIsRespondingTo = (id: string) => {
+        isRespondingTo.value = id 
+    }
+
+    const clearRespondingTo = () => {
+        isRespondingTo.value = null
+    }
+
     const setEditingMessage = (messageId: string) => {
         const message = messages.value
             .find((group) => group.messages.find((message) => message.id === messageId))
@@ -212,6 +222,9 @@ export function useChat(options: {
         sendMessage,
         chatHistory,
         isChatHistoryLoading,
-        loadMoreHistory
+        loadMoreHistory,
+        isRespondingTo,
+        setIsRespondingTo,
+        clearRespondingTo
     }
 }

@@ -15,7 +15,7 @@ export class GeminiChatAdapter implements IAIChatAdapter {
     }
 
     createChatSession(history: IContentInstance[] = []) {
-        this.#chat = this.#client.chats.create({ model: 'gemini-2.5-flash', history })
+        this.#chat = this.#client.chats.create({ model: GeminiChatAdapter.SERVICE_MODEL, history })
     }
 
     sendMessageStreaming(text: string) {
@@ -59,6 +59,6 @@ export class GeminiChatAdapter implements IAIChatAdapter {
         if (!result.text) {
             throw new DomainError('AI adapter did not return a text response.')
         }
-        return result.text 
+        return result.text
     }
 }

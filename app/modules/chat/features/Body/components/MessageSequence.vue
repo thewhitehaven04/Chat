@@ -63,6 +63,7 @@ defineExpose({
                 </template>
                 <li
                     class="hover:bg-neutral-50 min-h-8 relative after:text-xs flex flex-row justify-between items-center"
+                    @click="chat?.setIsRespondingTo(message.id)"
                 >
                     <p>
                         {{ message.text }}

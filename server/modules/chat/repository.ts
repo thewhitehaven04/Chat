@@ -1,7 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '~~/server/supabase'
 import type { IMessageEditInputDto, IMessageInputDto } from './models/types'
-import type { IChatMessageRepository, IRawChatMessagePayload } from './types'
+import type { IChatMessageRepository } from './types'
+import type { IRawChatMessagePayload } from './models/types'
 
 export class ChatMessageRepository implements IChatMessageRepository {
     #client: SupabaseClient<Database>

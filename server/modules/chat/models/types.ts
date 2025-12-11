@@ -62,3 +62,18 @@ export type TWebSocketIncomingMessagePayload =
     | { action: 'edit'; id: string; chatRoom: number; text: string }
     | { action: 'submit'; chatRoom: number; text: string }
     | { action: 'delete'; id: string }
+export interface IRawProfileData {
+    id: string
+    name: string
+    avatar_url: string | null
+}
+
+export interface IRawChatMessagePayload {
+    chat_room: number
+    id: string
+    modified_at: string | null
+    submitted_at: string
+    submitted_by: string
+    text: string
+    profiles: IRawProfileData
+}

@@ -28,8 +28,22 @@ const {
     isChatHistoryLoading,
     loadMoreHistory,
     inputMessage,
-    sendMessage
+    sendMessage,
+    setIsRespondingTo,
+    isRespondingTo,
+    clearRespondingTo
 } = chat
+
+const respondingToMessageText = computed(() => {
+    for (const sequence of messages.value) {
+        for (const message of sequence.messages) {
+            if (message.id === isRespondingTo.value) {
+                return message.text
+            }
+        }
+    }
+    return null
+})
 
 provide('chat', chat)
 
@@ -146,6 +160,9 @@ onUnmounted(() => {
         <div v-if="isDisconnected" class="flex flex-col text-white bg-red-300 font-bold text-lg">
             You've been disconnected
         </div>
-        <ChatInput v-model:model-value="inputMessage" @key-enter-pressed="sendMessage()" />
+        <div class="flex flex-col gap-1">
+            <ChatFeaturesRespondingTo :text="respondingToMessageText" />
+            <ChatInput v-model:model-value="inputMessage" @key-enter-pressed="sendMessage()" />
+        </div>
     </UContainer>
 </template>
