@@ -14,7 +14,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
             }
         } else {
             if (to.path === '/sign-in' || to.path === '/sign-up') {
-                console.log('navigate to:', 'root')
                 return navigateTo('/')
             }
         }

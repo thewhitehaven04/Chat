@@ -16,7 +16,7 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
             .insert({
                 chat_id: message.chatRoomId,
                 text: message.message,
-                submitter: 'user',
+                submitter: 'user'
             })
             .throwOnError()
     }
@@ -44,7 +44,7 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
                     id: m.id,
                     message: m.text,
                     chatRoomId: m.chat_id,
-                    submitter: m.submitter,
+                    submitter: (m.submitter === 'model' ? 'model' : 'userToModel') as 'model' | 'userToModel',
                     date: m.submitted_at
                 })),
             count
@@ -57,7 +57,7 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
             .insert({
                 chat_id: message.chatRoomId,
                 text: message.message,
-                submitter: 'model',
+                submitter: 'model'
             })
             .throwOnError()
     }
@@ -75,7 +75,7 @@ export class AIChatMessageRepository implements IAIChatMessageRepository {
             id: data.id,
             message: data.text,
             chatRoomId: data.chat_id,
-            submitter: data.submitter,
+            submitter: data.submitter === 'model' ? 'model' : 'userToModel',
             date: data.submitted_at
         }
     }

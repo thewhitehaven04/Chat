@@ -2,7 +2,7 @@ interface IPart {
     text: string
 }
 
-type TRole = 'user' | 'model'
+type TRole = 'userToModel' | 'model'
 
 export interface IContentInstance {
     parts: IPart[]

@@ -81,6 +81,7 @@ export type Database = {
                     chat_room: number
                     id: string
                     modified_at: string | null
+                    responds_to: string | null
                     submitted_at: string
                     submitted_by: string
                     text: string
@@ -89,6 +90,7 @@ export type Database = {
                     chat_room: number
                     id?: string
                     modified_at?: string | null
+                    responds_to?: string | null
                     submitted_at?: string
                     submitted_by?: string
                     text: string
@@ -97,6 +99,7 @@ export type Database = {
                     chat_room?: number
                     id?: string
                     modified_at?: string | null
+                    responds_to?: string | null
                     submitted_at?: string
                     submitted_by?: string
                     text?: string
@@ -107,6 +110,13 @@ export type Database = {
                         columns: ['chat_room']
                         isOneToOne: false
                         referencedRelation: 'chat_rooms'
+                        referencedColumns: ['id']
+                    },
+                    {
+                        foreignKeyName: 'chat_messages_responds_to_fkey'
+                        columns: ['responds_to']
+                        isOneToOne: false
+                        referencedRelation: 'chat_messages'
                         referencedColumns: ['id']
                     },
                     {

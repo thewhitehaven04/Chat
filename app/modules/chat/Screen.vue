@@ -29,9 +29,7 @@ const {
     loadMoreHistory,
     inputMessage,
     sendMessage,
-    setIsRespondingTo,
-    isRespondingTo,
-    clearRespondingTo
+    isRespondingTo
 } = chat
 
 const respondingToMessageText = computed(() => {

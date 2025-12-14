@@ -1,6 +1,6 @@
-import type { IChatMessageProps } from '~/modules/ai-chat/features/types'
 import { v4 as uuidv4 } from 'uuid'
 import { useThrottledFn } from '~/shared/core/composables/useThrottledFn'
+import type { TAIChatMessageProps } from '../features/types'
 
 export function useAiChatRoom(onRequest: () => void) {
     const route = useRoute()
@@ -18,7 +18,7 @@ export function useAiChatRoom(onRequest: () => void) {
 
     const inputMessage = ref<string>('')
 
-    const messages = ref<(IChatMessageProps & { id: string })[]>([])
+    const messages = ref<(TAIChatMessageProps & { id: string })[]>([])
     const isChatPending = computed(() => isHistoryLoading.value && !chatMessages.value)
     const isResponsePending = ref(false)
 
@@ -40,7 +40,6 @@ export function useAiChatRoom(onRequest: () => void) {
             skip.value += 30
         }
     }, 1000)
-    
 
     const handleSubmit = async () => {
         const message = inputMessage.value
@@ -48,7 +47,7 @@ export function useAiChatRoom(onRequest: () => void) {
             id: uuidv4(),
             date: new Date(),
             message,
-            type: 'user' as const
+            type: 'userToModel' as const
         }
         isResponsePending.value = true
         await $fetch<ReadableStream<Uint8Array>>(`/api/ai-chat/${route.params.roomId}/message`, {

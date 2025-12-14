@@ -14,6 +14,7 @@ export interface IChatMessageRepository {
     ): Promise<{ data: IRawChatMessagePayload[]; count: number | null }>
     deleteMessage(messageId: string): Promise<void>
     updateMessage(message: IMessageEditInputDto): Promise<IRawChatMessagePayload>
+    getMessage(messageId: string): Promise<IRawChatMessagePayload>
 }
 
 export interface IChatService {

@@ -3,9 +3,10 @@ export interface IAIChatMessageInputDto {
     chatRoomId: number
 }
 
+
 export interface IAIChatMessageDto extends IAIChatMessageInputDto {
     id: string
-    submitter: 'model' | 'user'
+    submitter: 'model' | 'userToModel'
     date: string
 }
 

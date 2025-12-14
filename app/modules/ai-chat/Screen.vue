@@ -2,7 +2,6 @@
 import { useAiChatRoom } from '~/modules/ai-chat/composables/useAiChatRoom'
 import ChatInput from '~/shared/components/ChatInput.vue'
 
-
 defineProps<{
     roomId: string
 }>()

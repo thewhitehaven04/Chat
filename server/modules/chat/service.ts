@@ -61,9 +61,24 @@ class ChatService implements IChatService {
                         const profile = await this.#profileSerivce.getProfileData(
                             payload.new.submitted_by
                         )
+                        let respondsTo: { id: string; text: string } | null = null
+                        if (payload.new.responds_to) {
+                            const messageBeingRespondedTo =
+                                await this.#chatMessageRepository.getMessage(
+                                    payload.new.responds_to
+                                )
+                            respondsTo = {
+                                id: messageBeingRespondedTo.id,
+                                text: messageBeingRespondedTo.text
+                            }
+                        }
                         messageCallbackFn({
                             action: 'insert',
-                            data: { ...payload.new, submitted_by: profile }
+                            data: {
+                                ...payload.new,
+                                submitted_by: profile,
+                                responds_to: respondsTo
+                            }
                         })
                     } else if (payload.eventType === 'DELETE') {
                         messageCallbackFn({
@@ -74,9 +89,24 @@ class ChatService implements IChatService {
                         const profile = await this.#profileSerivce.getProfileData(
                             payload.new.submitted_by
                         )
+                        let respondsTo: { id: string; text: string } | null = null
+                        if (payload.new.responds_to) {
+                            const messageBeingRespondedTo =
+                                await this.#chatMessageRepository.getMessage(
+                                    payload.new.responds_to
+                                )
+                            respondsTo = {
+                                id: messageBeingRespondedTo.id,
+                                text: messageBeingRespondedTo.text
+                            }
+                        }
                         messageCallbackFn({
                             action: 'update',
-                            data: { ...payload.new, submitted_by: profile }
+                            data: {
+                                ...payload.new,
+                                submitted_by: profile,
+                                responds_to: respondsTo
+                            }
                         })
                     }
                 }
@@ -131,6 +161,12 @@ class ChatService implements IChatService {
                 name: rawMessage.profiles.name,
                 avatarUrl: rawMessage.profiles.avatar_url
             },
+            responds_to: rawMessage.responds_to
+                ? {
+                      id: rawMessage.responds_to?.id,
+                      text: rawMessage.responds_to?.text
+                  }
+                : null,
             text: rawMessage.text
         }))
 
@@ -147,7 +183,13 @@ class ChatService implements IChatService {
                         lastGroup.messages.push({
                             id: message.id,
                             text: message.text,
-                            submitted_at: message.submitted_at
+                            submitted_at: message.submitted_at,
+                            respondsTo: message.responds_to
+                                ? {
+                                      id: message.responds_to?.id,
+                                      text: message.responds_to.text
+                                  }
+                                : null
                         })
                     } else {
                         lastGroup = {
@@ -157,7 +199,13 @@ class ChatService implements IChatService {
                                 {
                                     id: message.id,
                                     text: message.text,
-                                    submitted_at: message.submitted_at
+                                    submitted_at: message.submitted_at,
+                                    respondsTo: message.responds_to
+                                        ? {
+                                              id: message.responds_to?.id,
+                                              text: message.responds_to.text
+                                          }
+                                        : null
                                 }
                             ],
                             submitted_by: message.submitted_by
@@ -172,7 +220,13 @@ class ChatService implements IChatService {
                             {
                                 id: message.id,
                                 text: message.text,
-                                submitted_at: message.submitted_at
+                                submitted_at: message.submitted_at,
+                                respondsTo: message.responds_to
+                                    ? {
+                                          id: message.responds_to?.id,
+                                          text: message.responds_to.text
+                                      }
+                                    : null
                             }
                         ],
                         submitted_by: message.submitted_by

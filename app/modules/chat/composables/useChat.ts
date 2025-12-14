@@ -21,10 +21,10 @@ export function useChat(options: {
     const editedMessageId = ref<string | null>(null)
     const inputMessage = ref<string>('')
 
-    const isRespondingTo = ref<string|null>(null)
+    const isRespondingTo = ref<string | null>(null)
 
     const setIsRespondingTo = (id: string) => {
-        isRespondingTo.value = id 
+        isRespondingTo.value = id
     }
 
     const clearRespondingTo = () => {
@@ -100,6 +100,7 @@ export function useChat(options: {
                 text: _transformMessageText(inputMessage.value)
             })
         }
+        clearRespondingTo()
         inputMessage.value = ''
     }
 
@@ -149,7 +150,8 @@ export function useChat(options: {
             currentSequence.messages.push({
                 id: message.id,
                 text: message.text,
-                submitted_at: message.submitted_at
+                submitted_at: message.submitted_at,
+                respondsTo: message.responds_to
             })
         } else {
             messages.value.push({
@@ -159,7 +161,8 @@ export function useChat(options: {
                     {
                         id: message.id,
                         submitted_at: message.submitted_at,
-                        text: message.text
+                        text: message.text,
+                        respondsTo: message.responds_to
                     }
                 ],
                 submitted_by: {
@@ -224,7 +227,6 @@ export function useChat(options: {
         isChatHistoryLoading,
         loadMoreHistory,
         isRespondingTo,
-        setIsRespondingTo,
-        clearRespondingTo
+        setIsRespondingTo
     }
 }

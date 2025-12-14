@@ -1,8 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '~~/server/supabase'
-import type { IMessageEditInputDto, IMessageInputDto } from './models/types'
+import type { IMessageEditInputDto, IMessageInputDto, IRawChatMessagePayload } from './models/types'
 import type { IChatMessageRepository } from './types'
-import type { IRawChatMessagePayload } from './models/types'
 
 export class ChatMessageRepository implements IChatMessageRepository {
     #client: SupabaseClient<Database>
@@ -16,7 +15,8 @@ export class ChatMessageRepository implements IChatMessageRepository {
             .from('chat_messages')
             .insert({
                 text: message.text,
-                chat_room: message.chatRoom
+                chat_room: message.chatRoom,
+                responds_to: message.respondingTo
             })
             .throwOnError()
     }
@@ -28,7 +28,7 @@ export class ChatMessageRepository implements IChatMessageRepository {
     ): Promise<{ data: IRawChatMessagePayload[]; count: number | null }> {
         const { data, count } = await this.#client
             .from('chat_messages')
-            .select('*, profiles(*)', {
+            .select('*, profiles(*), responds_to(*)', {
                 count: 'exact'
             })
             .order('submitted_at', {
@@ -45,7 +45,7 @@ export class ChatMessageRepository implements IChatMessageRepository {
         await this.#client.from('chat_messages').delete().eq('id', messageId).throwOnError()
     }
 
-    async updateMessage(message: IMessageEditInputDto) {
+    async updateMessage(message: IMessageEditInputDto): Promise<IRawChatMessagePayload> {
         return (
             await this.#client
                 .from('chat_messages')
@@ -54,7 +54,18 @@ export class ChatMessageRepository implements IChatMessageRepository {
                     modified_at: new Date().toISOString()
                 })
                 .eq('id', message.id)
-                .select('*, profiles(*)')
+                .select('*, profiles(*), responds_to(*)')
+                .single()
+                .throwOnError()
+        ).data
+    }
+
+    async getMessage(messageId: string): Promise<IRawChatMessagePayload> {
+        return (
+            await this.#client
+                .from('chat_messages')
+                .select('*, profiles(*), responds_to(*)')
+                .eq('id', messageId)
                 .single()
                 .throwOnError()
         ).data
