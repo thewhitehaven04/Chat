@@ -48,6 +48,7 @@ const handleSubmit = async () => {
         <UContainer class="flex-1">
             <LazyAiChatFeaturesChatMessage
                 v-if="!!sentMessage"
+                :id="'id'"
                 :date="new Date()"
                 :type="'userToModel'"
                 :message="sentMessage"

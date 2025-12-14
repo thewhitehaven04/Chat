@@ -61,10 +61,26 @@ defineExpose({
                         @click="chat?.setEditingMessage(message.id)"
                     />
                 </template>
+
                 <li
-                    class="hover:bg-neutral-50 min-h-8 relative after:text-xs flex flex-row justify-between items-center"
+                    class="hover:bg-neutral-50 min-h-8 relative after:text-xs flex flex-col"
                     @click="chat?.setIsRespondingTo(message.id)"
                 >
+                    <div v-if="!!message.respondsTo" class="flex flex-row">
+                        <ULink
+                            class="text-neutral-500"
+                            :to="{
+                                hash: message.id
+                            }"
+                        >
+                            <div class="flex flex-row gap-1 items-center w-full">
+                                <UIcon name="i-lucide-corner-up-right" />
+                                <div class="text-neutral text-ellipsis max-w-full">
+                                    {{ message.text }}
+                                </div>
+                            </div>
+                        </ULink>
+                    </div>
                     <p>
                         {{ message.text }}
                     </p>

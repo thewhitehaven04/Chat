@@ -33,7 +33,7 @@ export default defineNuxtConfig({
     },
     app: {
         head: {
-            title: 'Mutlichat',
+            title: 'Multichat',
             link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
         }
     },

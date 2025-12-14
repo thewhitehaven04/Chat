@@ -82,6 +82,7 @@ watch(
             <li>
                 <AiChatFeaturesChatMessage
                     v-if="!!firstMessage"
+                    :id="firstMessage.id"
                     ref="firstMessage"
                     :date="firstMessage.date"
                     :type="firstMessage.type"
@@ -91,6 +92,7 @@ watch(
             <li>
                 <AiChatFeaturesChatMessage
                     v-for="message in remainingMessages"
+                    :id="message.id"
                     :key="message.id"
                     :date="message.date"
                     :type="message.type"

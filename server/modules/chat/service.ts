@@ -57,6 +57,7 @@ class ChatService implements IChatService {
                               Database['public']['Tables']['chat_messages']['Row']
                           >
                 ) => {
+
                     if (payload.eventType === 'INSERT') {
                         const profile = await this.#profileSerivce.getProfileData(
                             payload.new.submitted_by
@@ -108,6 +109,7 @@ class ChatService implements IChatService {
                                 responds_to: respondsTo
                             }
                         })
+                        console.log('Responds to:', respondsTo)
                     }
                 }
             )

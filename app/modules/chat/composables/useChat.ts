@@ -21,14 +21,14 @@ export function useChat(options: {
     const editedMessageId = ref<string | null>(null)
     const inputMessage = ref<string>('')
 
-    const isRespondingTo = ref<string | null>(null)
+    const messageIdResponse = ref<string | null>(null)
 
     const setIsRespondingTo = (id: string) => {
-        isRespondingTo.value = id
+        messageIdResponse.value = id
     }
 
     const clearRespondingTo = () => {
-        isRespondingTo.value = null
+        messageIdResponse.value = null
     }
 
     const setEditingMessage = (messageId: string) => {
@@ -90,14 +90,16 @@ export function useChat(options: {
                 action: 'edit',
                 id: editedMessageId.value,
                 chatRoom: Number(chatRoomId),
-                text: _transformMessageText(inputMessage.value)
+                text: _transformMessageText(inputMessage.value),
+                respondingTo: messageIdResponse.value
             })
             editedMessageId.value = null
         } else {
             sendWebSocketMessage({
                 action: 'submit',
                 chatRoom: Number(chatRoomId),
-                text: _transformMessageText(inputMessage.value)
+                text: _transformMessageText(inputMessage.value),
+                respondingTo: messageIdResponse.value
             })
         }
         clearRespondingTo()
@@ -226,7 +228,7 @@ export function useChat(options: {
         chatHistory,
         isChatHistoryLoading,
         loadMoreHistory,
-        isRespondingTo,
+        isRespondingTo: messageIdResponse,
         setIsRespondingTo
     }
 }

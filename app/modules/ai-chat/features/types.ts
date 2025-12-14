@@ -10,6 +10,7 @@ interface IMessageReponse {
 }
 
 export interface IUserMessageProps {
+    id: string
     type: 'user'
     message: string
     date: Date
@@ -17,6 +18,7 @@ export interface IUserMessageProps {
 }
 
 interface IAIUserMessageProps {
+    id: string
     type: 'userToModel'
     message: string
     date: Date
