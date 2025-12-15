@@ -67,16 +67,11 @@ defineExpose({
                     @click="chat?.setIsRespondingTo(message.id)"
                 >
                     <div v-if="!!message.respondsTo" class="flex flex-row">
-                        <ULink
-                            class="text-neutral-500"
-                            :to="{
-                                hash: message.id
-                            }"
-                        >
+                        <ULink class="text-neutral-500" :to="`#${message.respondsTo.id}`">
                             <div class="flex flex-row gap-1 items-center w-full">
                                 <UIcon name="i-lucide-corner-up-right" />
                                 <div class="text-neutral text-ellipsis max-w-full">
-                                    {{ message.text }}
+                                    {{ message.respondsTo.text }}
                                 </div>
                             </div>
                         </ULink>

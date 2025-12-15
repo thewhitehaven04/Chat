@@ -147,9 +147,9 @@ export function useChat(options: {
     }
 
     const onInsert = (message: IIncomingMessagePayload) => {
-        const currentSequence = messages.value.at(-1)
-        if (message.submitted_by.id === currentSequence?.submitted_by.id) {
-            currentSequence.messages.push({
+        const mostRecentMessageSequence = messages.value.at(-1)
+        if (message.submitted_by.id === mostRecentMessageSequence?.submitted_by.id) {
+            mostRecentMessageSequence.messages.push({
                 id: message.id,
                 text: message.text,
                 submitted_at: message.submitted_at,
