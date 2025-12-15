@@ -16,12 +16,19 @@ const formState = reactive({
 const router = useRouter()
 const { auth } = useSupabaseClient()
 
+const hasSubmissionError = ref(false)
+
 const handleSubmit = async ({ data }: FormSubmitEvent<z.output<typeof schema>>) => {
-    await auth.signInWithPassword({
+    hasSubmissionError.value = false
+    const response = await auth.signInWithPassword({
         email: data.email,
         password: data.password
     })
-    router.push('/')
+    if (response.error) {
+        hasSubmissionError.value = true
+    } else {
+        router.push('/')
+    }
 }
 </script>
 
@@ -48,6 +55,9 @@ const handleSubmit = async ({ data }: FormSubmitEvent<z.output<typeof schema>>) 
                     />
                 </UFormField>
                 <UButton label="Sign In" color="neutral" type="submit" />
+                <div class="flex flex-row items-center justify-center w-full">
+                    <p v-if="hasSubmissionError" class="text-red-400">Invalid login credentials</p>
+                </div>
             </UForm>
         </template>
         <template #footer>

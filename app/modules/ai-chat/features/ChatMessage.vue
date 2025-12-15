@@ -25,7 +25,7 @@ defineExpose<{
         </div>
         <div v-else class="flex flex-row justify-start w-full">
             <div
-                class="bg-accented rounded-lg p-4 max-w-3xl w-max"
+                class="bg-accented dark:bg-blue-400 rounded-lg p-4 max-w-3xl w-max"
                 v-html="markdown.render($props.message)"
             />
         </div>

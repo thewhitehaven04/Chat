@@ -4,7 +4,7 @@ interface IModelMessageProps {
     date: Date
 }
 
-interface IMessageReponse {
+export interface IMessageResponse {
     id: string
     text: string
 }
@@ -14,7 +14,7 @@ export interface IUserMessageProps {
     type: 'user'
     message: string
     date: Date
-    respondingTo: IMessageReponse
+    respondingTo: IMessageResponse
 }
 
 interface IAIUserMessageProps {

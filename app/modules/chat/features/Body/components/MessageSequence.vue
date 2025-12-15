@@ -63,7 +63,7 @@ defineExpose({
                 </template>
 
                 <li
-                    class="hover:bg-neutral-50 min-h-8 relative after:text-xs flex flex-col"
+                    class="hover:bg-neutral-100 dark:hover:bg-neutral-800 min-h-8 relative after:text-xs flex flex-col"
                     @click="chat?.setIsRespondingTo(message.id)"
                 >
                     <div v-if="!!message.respondsTo" class="flex flex-row">
