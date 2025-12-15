@@ -1,5 +1,6 @@
 import type {
     RealtimeChannel,
+    RealtimePostgresChangesPayload,
     RealtimePostgresDeletePayload,
     RealtimePostgresInsertPayload,
     RealtimePostgresUpdatePayload,
@@ -21,7 +22,7 @@ import type { IChatRoomRepository } from '../chat-rooms/types'
 
 class ChatService implements IChatService {
     #client: SupabaseClient<Database>
-    #profileSerivce: ProfileService
+    #profileService: ProfileService
     #chatMessageRepository: IChatMessageRepository
     #chatRoomRepository: IChatRoomRepository
     #subscriptionChannel: RealtimeChannel | null
@@ -33,7 +34,7 @@ class ChatService implements IChatService {
         chatRoomRepository: IChatRoomRepository
     ) {
         this.#client = client
-        this.#profileSerivce = profileService
+        this.#profileService = profileService
         this.#chatMessageRepository = chatMessageRepository
         this.#chatRoomRepository = chatRoomRepository
         this.#subscriptionChannel = null
@@ -46,74 +47,101 @@ class ChatService implements IChatService {
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'chat_messages' },
                 async (
-                    payload:
-                        | RealtimePostgresInsertPayload<
-                              Database['public']['Tables']['chat_messages']['Row']
-                          >
-                        | RealtimePostgresUpdatePayload<
-                              Database['public']['Tables']['chat_messages']['Row']
-                          >
-                        | RealtimePostgresDeletePayload<
-                              Database['public']['Tables']['chat_messages']['Row']
-                          >
+                    payload: RealtimePostgresChangesPayload<
+                        Database['public']['Tables']['chat_messages']['Row']
+                    >
                 ) => {
-
-                    if (payload.eventType === 'INSERT') {
-                        const profile = await this.#profileSerivce.getProfileData(
-                            payload.new.submitted_by
-                        )
-                        let respondsTo: { id: string; text: string } | null = null
-                        if (payload.new.responds_to) {
-                            const messageBeingRespondedTo =
-                                await this.#chatMessageRepository.getMessage(
-                                    payload.new.responds_to
-                                )
-                            respondsTo = {
-                                id: messageBeingRespondedTo.id,
-                                text: messageBeingRespondedTo.text
-                            }
-                        }
-                        messageCallbackFn({
-                            action: 'insert',
-                            data: {
-                                ...payload.new,
-                                submitted_by: profile,
-                                responds_to: respondsTo
-                            }
-                        })
-                    } else if (payload.eventType === 'DELETE') {
-                        messageCallbackFn({
-                            action: 'delete',
-                            data: payload.old.id || ''
-                        })
-                    } else if (payload.eventType === 'UPDATE') {
-                        const profile = await this.#profileSerivce.getProfileData(
-                            payload.new.submitted_by
-                        )
-                        let respondsTo: { id: string; text: string } | null = null
-                        if (payload.new.responds_to) {
-                            const messageBeingRespondedTo =
-                                await this.#chatMessageRepository.getMessage(
-                                    payload.new.responds_to
-                                )
-                            respondsTo = {
-                                id: messageBeingRespondedTo.id,
-                                text: messageBeingRespondedTo.text
-                            }
-                        }
-                        messageCallbackFn({
-                            action: 'update',
-                            data: {
-                                ...payload.new,
-                                submitted_by: profile,
-                                responds_to: respondsTo
-                            }
-                        })
-                        console.log('Responds to:', respondsTo)
+                    switch (payload.eventType) {
+                        case 'INSERT':
+                            await this.handleMessageSubmit(payload, messageCallbackFn)
+                            break
+                        case 'DELETE':
+                            this.handleMessageDelete(payload, messageCallbackFn)
+                            break
+                        case 'UPDATE':
+                            await this.handleMessageUpdate(payload, messageCallbackFn)
+                            break
                     }
                 }
             )
             .subscribe()
+    }
+
+    private async handlePayload(
+        payload:
+            | RealtimePostgresInsertPayload<Database['public']['Tables']['chat_messages']['Row']>
+            | RealtimePostgresUpdatePayload<Database['public']['Tables']['chat_messages']['Row']>,
+        messageCallbackFn: (subscriptionAction: TWebSocketSubscriptionPayload) => void,
+        action: 'insert' | 'update'
+    ) {
+        try {
+            const profile = await this.#profileService.getProfileData(payload.new.submitted_by)
+            const respondsTo = await this.fetchRespondsToMessage(payload.new.responds_to)
+            console.log('Responds to on server:', respondsTo)
+            messageCallbackFn({
+                action,
+                data: {
+                    ...payload.new,
+                    submitted_by: profile,
+                    responds_to: respondsTo
+                }
+            })
+        } catch (error) {
+            console.error(`Error handling ${action} payload:`, error)
+        }
+    }
+
+    private async handleMessageSubmit(
+        payload: RealtimePostgresInsertPayload<{
+            chat_room: number
+            id: string
+            modified_at: string | null
+            responds_to: string | null
+            submitted_at: string
+            submitted_by: string
+            text: string
+        }>,
+        messageCallbackFn: (subscriptionAction: TWebSocketSubscriptionPayload) => void
+    ) {
+        await this.handlePayload(payload, messageCallbackFn, 'insert')
+    }
+
+    private handleMessageDelete(
+        payload: RealtimePostgresDeletePayload<
+            Database['public']['Tables']['chat_messages']['Row']
+        >,
+        messageCallbackFn: (subscriptionAction: TWebSocketSubscriptionPayload) => void
+    ) {
+        messageCallbackFn({
+            action: 'delete',
+            data: payload.old.id || ''
+        })
+    }
+
+    private async handleMessageUpdate(
+        payload: RealtimePostgresUpdatePayload<{
+            chat_room: number
+            id: string
+            modified_at: string | null
+            responds_to: string | null
+            submitted_at: string
+            submitted_by: string
+            text: string
+        }>,
+        messageCallbackFn: (subscriptionAction: TWebSocketSubscriptionPayload) => void
+    ) {
+        await this.handlePayload(payload, messageCallbackFn, 'update')
+    }
+
+    private async fetchRespondsToMessage(
+        respondsToId: string | null
+    ): Promise<{ id: string; text: string } | null> {
+        if (!respondsToId) return null
+        const messageBeingRespondedTo = await this.#chatMessageRepository.getMessage(respondsToId)
+        return {
+            id: messageBeingRespondedTo.id,
+            text: messageBeingRespondedTo.text
+        }
     }
 
     async sendMessage(message: IMessageInputDto) {
