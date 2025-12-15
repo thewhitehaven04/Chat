@@ -63,6 +63,7 @@ defineExpose({
                 </template>
 
                 <li
+                    :id="message.id"
                     class="hover:bg-neutral-100 dark:hover:bg-neutral-800 min-h-8 relative after:text-xs flex flex-col"
                     @click="chat?.setIsRespondingTo(message.id)"
                 >
